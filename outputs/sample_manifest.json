@@ -1,0 +1,71 @@
+{
+  "run_id": "f41a2284-3219-47ef-832e-67c339336cfa",
+  "actor": "ukg15381",
+  "source_version": "cc7d2dc92fd7ed66e30265b12afeb3a212a26da23ca51476988a7e0fb57f1cb8",
+  "target_project": "dry-run",
+  "result_summary": {
+    "tasks_total": 3,
+    "tasks_published": 0,
+    "tasks_updated": 0,
+    "tasks_failed": 0,
+    "tasks_skipped": 0,
+    "project_sync_found": 0,
+    "project_sync_recovered": 0,
+    "project_sync_missing": 0,
+    "project_sync_failed": 0,
+    "project_sync_skipped": 0,
+    "dry_run": true
+  },
+  "task_fingerprints": {
+    "1.1": "dcd6399b9fec5b9bf85156e48f417896c9cd07c466242e77b27d991643aa26b1",
+    "1.2": "d10ea94e9d32a3d63f4129838898f99a80b3e6608b4ea463ab0386b6909bbd46",
+    "2.1": "0fd081c915782ada6147cbf74c2fb03b71db1e8b40c2533745f802329f5a54fc"
+  },
+  "publish_results": [
+    {
+      "task_id": "1.1",
+      "github_issue_number": null,
+      "project_item_id": null,
+      "publish_status": "dry_run",
+      "action": "dry_run",
+      "phase_label": "1. Foundation",
+      "section_ref": "1.1",
+      "matched_by": "section_ref",
+      "previous_hash": "",
+      "new_hash": "dcd6399b9fec5b9bf85156e48f417896c9cd07c466242e77b27d991643aa26b1",
+      "updated_issue_number": null,
+      "project_sync_status": "",
+      "error_message": ""
+    },
+    {
+      "task_id": "1.2",
+      "github_issue_number": null,
+      "project_item_id": null,
+      "publish_status": "dry_run",
+      "action": "dry_run",
+      "phase_label": "1. Foundation",
+      "section_ref": "1.2",
+      "matched_by": "section_ref",
+      "previous_hash": "",
+      "new_hash": "d10ea94e9d32a3d63f4129838898f99a80b3e6608b4ea463ab0386b6909bbd46",
+      "updated_issue_number": null,
+      "project_sync_status": "",
+      "error_message": ""
+    },
+    {
+      "task_id": "2.1",
+      "github_issue_number": null,
+      "project_item_id": null,
+      "publish_status": "dry_run",
+      "action": "dry_run",
+      "phase_label": "2. Data access",
+      "section_ref": "2.1",
+      "matched_by": "section_ref",
+      "previous_hash": "",
+      "new_hash": "0fd081c915782ada6147cbf74c2fb03b71db1e8b40c2533745f802329f5a54fc",
+      "updated_issue_number": null,
+      "project_sync_status": "",
+      "error_message": ""
+    }
+  ]
+}

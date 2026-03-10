@@ -1,0 +1,81 @@
+{
+  "source_file": "tests/fixtures/databricks_setup_environment_roadmap.md",
+  "source_hash": "cc7d2dc92fd7ed66e30265b12afeb3a212a26da23ca51476988a7e0fb57f1cb8",
+  "title": "Databricks Setup Environment Roadmap",
+  "imported_at": "2026-03-09T21:45:21.109880+00:00",
+  "phases": [
+    {
+      "phase_id": "1",
+      "order": 1,
+      "title": "1. Foundation",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "1.1",
+          "phase_id": "1",
+          "section_ref": "1.1",
+          "title": "1.1 Workspace setup",
+          "activities": [
+            "Create workspace",
+            "Configure VNET",
+            "Enable secure cluster connectivity"
+          ],
+          "verification": [
+            "Workspace reachable via browser"
+          ],
+          "expected_output": "Workspace ready for onboarding",
+          "done_when": "All connectivity checks pass",
+          "tracking_template": "Owner: Platform Team",
+          "initial_status": "Backlog",
+          "content_hash": "dcd6399b9fec5b9bf85156e48f417896c9cd07c466242e77b27d991643aa26b1"
+        },
+        {
+          "task_id": "1.2",
+          "phase_id": "1",
+          "section_ref": "1.2",
+          "title": "1.2 Cluster policy",
+          "activities": [
+            "Define cluster policies",
+            "Apply policy to default clusters"
+          ],
+          "verification": [
+            "Policy enforced on new clusters"
+          ],
+          "expected_output": "Standardized cluster governance",
+          "done_when": "Policies applied to all default clusters",
+          "tracking_template": "Owner: Data Engineering",
+          "initial_status": "Backlog",
+          "content_hash": "d10ea94e9d32a3d63f4129838898f99a80b3e6608b4ea463ab0386b6909bbd46"
+        }
+      ]
+    },
+    {
+      "phase_id": "2",
+      "order": 2,
+      "title": "2. Data access",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "2.1",
+          "phase_id": "2",
+          "section_ref": "2.1",
+          "title": "2.1 Secret scope",
+          "activities": [
+            "Create secret scope",
+            "Store service principal credentials"
+          ],
+          "verification": [
+            "Secrets retrievable by notebooks"
+          ],
+          "expected_output": "Secure secret management",
+          "done_when": "Secret scope validated",
+          "tracking_template": "Owner: Security",
+          "initial_status": "Todo",
+          "content_hash": "0fd081c915782ada6147cbf74c2fb03b71db1e8b40c2533745f802329f5a54fc"
+        }
+      ]
+    }
+  ]
+}

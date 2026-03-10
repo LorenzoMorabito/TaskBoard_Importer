@@ -1,0 +1,34 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python cache / compiled
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local outputs
+outputs/real_*.json
+outputs/*.local.json
+
+# Env / secrets
+.env
+.env.*
+*.token
+*.secret
