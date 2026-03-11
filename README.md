@@ -15,17 +15,17 @@ Sistema deterministico per trasformare roadmap Markdown strutturate in task norm
 
 ## Comandi principali (initializer)
 ```bash
-python -m taskboard_importer.cli init-project \
+taskboard init-project \
   --slug databricks-setup \
   --title "Setup Environment Databricks" \
   --path ./projects/databricks-setup \
   --template standard
 
-python -m taskboard_importer.cli import-roadmap \
+taskboard import-roadmap \
   --project ./projects/databricks-setup \
   --dry-run
 
-python -m taskboard_importer.cli bootstrap-github \
+taskboard bootstrap-github \
   --project ./projects/databricks-setup \
   --repo-owner <owner> --repo-name <repo>
 ```
