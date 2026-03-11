@@ -1,0 +1,25 @@
+project_id: 50c239fb-c8e6-4f10-a500-1757d2232580
+slug: databricks-setup
+title: Setup Environment Databricks
+description: 
+owner: 
+created_at: 2026-03-11T00:51:49.550043+00:00
+engine_version: 0.1.0
+workspace_version: 1
+github:
+  repo_owner: 
+  repo_name: 
+  project_number: 
+publishing:
+  default_policy_profile: standard
+labels:
+  default: phase
+templates:
+  profile: standard
+paths:
+  roadmap: roadmap/roadmap.md
+  docs: docs
+  state: state
+  outputs: outputs
+  rules: rules/publish_rules.yml
+  attachments: attachments

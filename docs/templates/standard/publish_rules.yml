@@ -1,0 +1,7 @@
+# Publish Rules
+
+profiles:
+  standard:
+    publish_as_issue: true
+    publish_as_doc_issue: false
+    publish_as_note: false

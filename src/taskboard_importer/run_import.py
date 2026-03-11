@@ -142,8 +142,6 @@ def main() -> int:
     issue_create = [d for d in to_create if _is_issue_policy(d.task)]
     issue_update = [d for d in to_update if _is_issue_policy(d.task)]
     non_issue_decisions = [d for d in decisions if not _is_issue_policy(d.task)]
-    doc_issue_decisions = [d for d in decisions if _is_doc_issue_policy(d.task)]
-    note_decisions = [d for d in decisions if _is_note_policy(d.task)]
 
     if skipped:
         print(f"Skipped {len(skipped)} tasks due to dedupe policy.")
