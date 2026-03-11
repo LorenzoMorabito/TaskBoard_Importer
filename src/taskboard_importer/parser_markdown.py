@@ -10,6 +10,8 @@ from .schema import ProjectImport, Phase, Task, utc_now_iso
 
 
 LIST_BULLET_RE = re.compile(r"^\s*[-*+]\s+(.*)$")
+ORDERED_BULLET_RE = re.compile(r"^\s*\d+[.)]\s+(.*)$")
+HORIZONTAL_RULE_RE = re.compile(r"^\s*([-*_])(?:\s*\1){2,}\s*$")
 NUM_PREFIX_RE = re.compile(r"^\s*(\d+(?:\.\d+)*)\b")
 H1_RE = re.compile(r"^#\s+(.*)$")
 H2_RE = re.compile(r"^##\s+(.*)$")
@@ -70,9 +72,44 @@ def _extract_numeric_prefix(text: str) -> Optional[str]:
     return None
 
 
-def _normalize_field_label(text: str) -> Optional[str]:
-    label = text.strip().rstrip(":").lower()
-    return FIELD_ALIASES.get(label)
+def _strip_inline_markdown(text: str) -> str:
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"[*_]+", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _extract_field_label_and_rest(text: str) -> tuple[Optional[str], str]:
+    cleaned = _strip_inline_markdown(text)
+    lowered = cleaned.lower()
+
+    for alias, field_name in FIELD_ALIASES.items():
+        if lowered == alias:
+            return field_name, ""
+        for separator in (":", " - ", " – ", " — "):
+            prefix = f"{alias}{separator}"
+            if lowered.startswith(prefix):
+                return field_name, cleaned[len(alias) + len(separator) :].strip()
+
+    return None, ""
+
+
+def _append_to_field(task: ParsedTaskBuffer, field_name: Optional[str], text: str) -> None:
+    value = text.strip()
+    if not value:
+        return
+
+    if field_name == "verification":
+        task.verification.append(value)
+    elif field_name == "expected_output":
+        task.expected_output_lines.append(value)
+    elif field_name == "done_when":
+        task.done_when_lines.append(value)
+    elif field_name == "tracking_template":
+        task.tracking_lines.append(value)
+    elif field_name == "initial_status":
+        task.initial_status_lines.append(value)
+    else:
+        task.activities.append(value)
 
 
 def parse_markdown(path: str) -> ProjectImport:
@@ -116,6 +153,8 @@ def parse_markdown(path: str) -> ProjectImport:
     current_task: Optional[ParsedTaskBuffer] = None
     current_field: Optional[str] = None
     phase_counter = 0
+    preamble_lines: List[str] = []
+    seen_numbered_phase = False
 
     def flush_task() -> None:
         nonlocal current_task
@@ -131,7 +170,7 @@ def parse_markdown(path: str) -> ProjectImport:
 
     for line in lines:
         stripped = line.strip()
-        if not stripped:
+        if not stripped or HORIZONTAL_RULE_RE.match(stripped):
             continue
 
         h1_match = H1_RE.match(stripped)
@@ -140,24 +179,35 @@ def parse_markdown(path: str) -> ProjectImport:
             flush_phase()
 
             h1_text = h1_match.group(1).strip()
-            if doc_title and h1_text == doc_title and _extract_numeric_prefix(h1_text) is None:
+            numeric_prefix = _extract_numeric_prefix(h1_text)
+            if doc_title and h1_text == doc_title and numeric_prefix is None:
                 current_phase = None
+                current_field = None
                 continue
 
             phase_counter += 1
-            phase_id = _extract_numeric_prefix(h1_text) or str(phase_counter)
             current_phase = Phase(
-                phase_id=phase_id,
+                phase_id=numeric_prefix or str(phase_counter),
                 order=phase_counter,
                 title=h1_text,
                 summary="",
             )
+            if numeric_prefix:
+                seen_numbered_phase = True
+                # keep preamble_lines for project-level summary
             current_field = None
             continue
 
         h2_match = H2_RE.match(stripped)
         if h2_match:
             flush_task()
+            h2_text = h2_match.group(1).strip()
+
+            if current_phase is None and not seen_numbered_phase:
+                preamble_lines.append(h2_text)
+                current_field = None
+                continue
+
             if current_phase is None:
                 phase_counter += 1
                 current_phase = Phase(
@@ -166,7 +216,6 @@ def parse_markdown(path: str) -> ProjectImport:
                     title=f"Phase {phase_counter}",
                     summary="",
                 )
-            h2_text = h2_match.group(1).strip()
             section_ref = _extract_numeric_prefix(h2_text) or f"{current_phase.phase_id}.{len(current_phase.tasks) + 1}"
             current_task = ParsedTaskBuffer(
                 title=h2_text,
@@ -177,48 +226,28 @@ def parse_markdown(path: str) -> ProjectImport:
             continue
 
         if current_task is None:
-            if current_phase and current_phase.summary:
-                current_phase.summary += "\n" + stripped
-            elif current_phase:
-                current_phase.summary = stripped
+            if current_phase:
+                if current_phase.summary:
+                    current_phase.summary += "\n" + stripped
+                else:
+                    current_phase.summary = stripped
+            elif not seen_numbered_phase:
+                preamble_lines.append(stripped)
             continue
 
-        field_label = _normalize_field_label(stripped)
+        field_label, field_inline_value = _extract_field_label_and_rest(stripped)
         if field_label:
             current_field = field_label
+            if field_inline_value:
+                _append_to_field(current_task, current_field, field_inline_value)
             continue
 
-        bullet_match = LIST_BULLET_RE.match(stripped)
-        if bullet_match:
-            item = bullet_match.group(1).strip()
-            if current_field == "verification":
-                current_task.verification.append(item)
-            elif current_field == "activities" or current_field is None:
-                current_task.activities.append(item)
-            elif current_field == "expected_output":
-                current_task.expected_output_lines.append(item)
-            elif current_field == "done_when":
-                current_task.done_when_lines.append(item)
-            elif current_field == "tracking_template":
-                current_task.tracking_lines.append(item)
-            elif current_field == "initial_status":
-                current_task.initial_status_lines.append(item)
-            else:
-                current_task.activities.append(item)
+        list_match = LIST_BULLET_RE.match(stripped) or ORDERED_BULLET_RE.match(stripped)
+        if list_match:
+            _append_to_field(current_task, current_field, list_match.group(1).strip())
             continue
 
-        if current_field == "verification":
-            current_task.verification.append(stripped)
-        elif current_field == "activities" or current_field is None:
-            current_task.activities.append(stripped)
-        elif current_field == "expected_output":
-            current_task.expected_output_lines.append(stripped)
-        elif current_field == "done_when":
-            current_task.done_when_lines.append(stripped)
-        elif current_field == "tracking_template":
-            current_task.tracking_lines.append(stripped)
-        elif current_field == "initial_status":
-            current_task.initial_status_lines.append(stripped)
+        _append_to_field(current_task, current_field, stripped)
 
     flush_task()
     flush_phase()
@@ -228,5 +257,6 @@ def parse_markdown(path: str) -> ProjectImport:
         source_hash=source_hash,
         title=doc_title,
         imported_at=utc_now_iso(),
+        summary="\n".join(preamble_lines).strip(),
         phases=phases,
     )

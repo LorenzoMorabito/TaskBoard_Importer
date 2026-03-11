@@ -1,13 +1,14 @@
 {
-  "source_file": "tests/fixtures/databricks_setup_environment_roadmap.md",
-  "source_hash": "cc7d2dc92fd7ed66e30265b12afeb3a212a26da23ca51476988a7e0fb57f1cb8",
-  "title": "Databricks Setup Environment Roadmap",
-  "imported_at": "2026-03-09T21:45:21.109880+00:00",
+  "source_file": "C:\\Users\\ukg15381\\OneDrive - Kirey Group\\.01 FrontEnd OAC\\task_handle_project\\databricks_setup_environment_roadmap.md",
+  "source_hash": "d722f81a39bd519d1e827e2cff5c62c73ba4cf28b2f9acc037c4c9bf107632c0",
+  "title": "Roadmap operativa — Setup Environment Databricks",
+  "imported_at": "2026-03-10T23:17:58.159275+00:00",
+  "summary": "Scopo del documento\nQuesta roadmap descrive **tutte le attività e sottoattività** necessarie per portare il setup environment Databricks da **0 a concluso**, con una struttura pensata per:\n- avere sempre visibilità sullo **stato reale di avanzamento**;\n- sapere cosa è **già stato fatto**, cosa è **in corso** e cosa **manca**;\n- produrre per ogni step un **output verificabile**;\n- usare il file come checklist viva dentro la cartella di progetto.\nCome usare questa roadmap\nPer ogni sottoattività compila questi campi:\n- **Status**: `TODO` / `IN PROGRESS` / `DONE` / `BLOCKED`\n- **Owner**: chi la esegue\n- **Data**: quando è stata eseguita\n- **Evidenza**: notebook, screenshot, output comando, link repo, path file, job run, ecc.\n- **Note/Rischi**: eventuali problemi o decisioni prese\n### Convenzione avanzamento\n- **0%**: nessuna attività iniziata\n- **25%**: accessi e strumenti base pronti\n- **50%**: repo/package e compute funzionanti\n- **75%**: sample run end-to-end stabile\n- **100%**: ambiente documentato, ripetibile, pronto per sviluppo e demo portfolio",
   "phases": [
     {
       "phase_id": "1",
       "order": 1,
-      "title": "1. Foundation",
+      "title": "1. Definizione perimetro setup",
       "summary": "",
       "dependencies": [],
       "tasks": [
@@ -15,45 +16,52 @@
           "task_id": "1.1",
           "phase_id": "1",
           "section_ref": "1.1",
-          "title": "1.1 Workspace setup",
+          "title": "1.1 Obiettivo del setup",
           "activities": [
-            "Create workspace",
-            "Configure VNET",
-            "Enable secure cluster connectivity"
+            "Definire con chiarezza cosa significa “environment concluso”.",
+            "Stabilire se il focus è:",
+            "sviluppo notebook;",
+            "sviluppo package Python;",
+            "esecuzione batch/job;",
+            "gestione repo Git;",
+            "test con dati sample in Volume/DBFS."
           ],
-          "verification": [
-            "Workspace reachable via browser"
-          ],
-          "expected_output": "Workspace ready for onboarding",
-          "done_when": "All connectivity checks pass",
-          "tracking_template": "Owner: Platform Team",
+          "verification": [],
+          "expected_output": "Mini definizione di done del setup.",
+          "done_when": "Esiste una frase chiara del tipo:\n`L'environment è concluso quando posso eseguire il progetto da repo versionata su Databricks, importare il package senza workaround fragili, lanciare un test sample end-to-end e produrre un output verificabile.`",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
           "initial_status": "Backlog",
-          "content_hash": "dcd6399b9fec5b9bf85156e48f417896c9cd07c466242e77b27d991643aa26b1"
+          "content_hash": "405120e1289567686fcebb11e1b8d4ee7e69705d6768bb4a92224d58dcdcac3d"
         },
         {
           "task_id": "1.2",
           "phase_id": "1",
           "section_ref": "1.2",
-          "title": "1.2 Cluster policy",
+          "title": "1.2 Inventario iniziale",
           "activities": [
-            "Define cluster policies",
-            "Apply policy to default clusters"
+            "Elencare gli asset disponibili:",
+            "account Databricks;",
+            "workspace;",
+            "compute/cluster/serverless;",
+            "repo GitHub/GitLab;",
+            "progetto locale;",
+            "sample data;",
+            "config file;",
+            "Volumes / Unity Catalog / Catalog / Schema."
           ],
-          "verification": [
-            "Policy enforced on new clusters"
-          ],
-          "expected_output": "Standardized cluster governance",
-          "done_when": "Policies applied to all default clusters",
-          "tracking_template": "Owner: Data Engineering",
+          "verification": [],
+          "expected_output": "Tabella inventario iniziale.",
+          "done_when": "È chiaro cosa esiste già e cosa manca.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
           "initial_status": "Backlog",
-          "content_hash": "d10ea94e9d32a3d63f4129838898f99a80b3e6608b4ea463ab0386b6909bbd46"
+          "content_hash": "9c30eb5ae8db38130bece2c73f1bcdad890876e83ef94cd8842296266e7ea1ab"
         }
       ]
     },
     {
       "phase_id": "2",
       "order": 2,
-      "title": "2. Data access",
+      "title": "2. Accesso e prerequisiti di base",
       "summary": "",
       "dependencies": [],
       "tasks": [
@@ -61,19 +69,865 @@
           "task_id": "2.1",
           "phase_id": "2",
           "section_ref": "2.1",
-          "title": "2.1 Secret scope",
+          "title": "2.1 Accesso al workspace Databricks",
           "activities": [
-            "Create secret scope",
-            "Store service principal credentials"
+            "Verificare login al workspace.",
+            "Verificare quale workspace si sta usando.",
+            "Annotare host workspace."
           ],
           "verification": [
-            "Secrets retrievable by notebooks"
+            "Accesso UI riuscito.",
+            "Host disponibile e corretto."
           ],
-          "expected_output": "Secure secret management",
-          "done_when": "Secret scope validated",
-          "tracking_template": "Owner: Security",
-          "initial_status": "Todo",
-          "content_hash": "0fd081c915782ada6147cbf74c2fb03b71db1e8b40c2533745f802329f5a54fc"
+          "expected_output": "Host Databricks documentato.",
+          "done_when": "L’utente entra stabilmente nel workspace corretto.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "3ee0640ddf63ea60a6c1f840ebe1517a3090ec9cd8b3c3b55576e36b7db01cb3"
+        },
+        {
+          "task_id": "2.2",
+          "phase_id": "2",
+          "section_ref": "2.2",
+          "title": "2.2 Permessi minimi",
+          "activities": [
+            "Verificare permessi su:",
+            "workspace folders;",
+            "repo;",
+            "compute;",
+            "catalog/schema/volume;",
+            "jobs/workflows, se previsti."
+          ],
+          "verification": [
+            "Riesci ad aprire notebook, collegare repo, leggere/scrivere nel path di test."
+          ],
+          "expected_output": "Lista permessi effettivi disponibili.",
+          "done_when": "Non ci sono blocchi autorizzativi per sviluppo e test.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "684c51b62434601893ec2f6b550181cae8e98bbc030150cf8a7299c28783c397"
+        },
+        {
+          "task_id": "2.3",
+          "phase_id": "2",
+          "section_ref": "2.3",
+          "title": "2.3 Tool locale di supporto",
+          "activities": [
+            "Verificare installazione di:",
+            "Python;",
+            "Git;",
+            "VS Code;",
+            "Databricks CLI / extension VS Code, se adottata.",
+            "Annotare versioni."
+          ],
+          "verification": [
+            "Comandi base disponibili da terminale."
+          ],
+          "expected_output": "Lista versioni tool.",
+          "done_when": "Gli strumenti locali minimi sono installati e riconosciuti.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "42b147dd0ae4a8f54de4fd99512a42d129281dd55916aa4929a5609b160fbac5"
+        }
+      ]
+    },
+    {
+      "phase_id": "3",
+      "order": 3,
+      "title": "3. Connessione locale ↔ Databricks",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "3.1",
+          "phase_id": "3",
+          "section_ref": "3.1",
+          "title": "3.1 Configurazione autenticazione",
+          "activities": [
+            "Configurare il profilo Databricks locale.",
+            "Associare host corretto.",
+            "Verificare metodo di autenticazione in uso."
+          ],
+          "verification": [
+            "Login CLI riuscito.",
+            "Profilo salvato correttamente."
+          ],
+          "expected_output": "Profilo locale funzionante.",
+          "done_when": "Da locale è possibile autenticarsi al workspace senza errori.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "ba3875dce87a1a6200245c49d5bcce9ebeac4c97192ae1021bb18178766b631f"
+        },
+        {
+          "task_id": "3.2",
+          "phase_id": "3",
+          "section_ref": "3.2",
+          "title": "3.2 Test connessione operativa",
+          "activities": [
+            "Eseguire un comando di verifica verso il workspace.",
+            "Confermare che il profilo punti al tenant corretto."
+          ],
+          "verification": [
+            "La CLI/estensione risponde senza errori di host o auth."
+          ],
+          "expected_output": "Test connessione riuscito.",
+          "done_when": "La connessione è utilizzabile per operazioni reali.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "40941ac5cc380e32cb03cf6911857e9511621cd1cb8a9646e5dc5b124dfd30ee"
+        }
+      ]
+    },
+    {
+      "phase_id": "4",
+      "order": 4,
+      "title": "4. Setup repository di progetto",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "4.1",
+          "phase_id": "4",
+          "section_ref": "4.1",
+          "title": "4.1 Creazione o collegamento repo remota",
+          "activities": [
+            "Verificare se il progetto vive su GitHub o GitLab.",
+            "Creare repo se assente oppure collegare quella esistente.",
+            "Definire branch principale (`main` o `master`) e, se serve, branch di sviluppo."
+          ],
+          "verification": [
+            "Repo remota accessibile."
+          ],
+          "expected_output": "URL repo e branch strategy minima documentate.",
+          "done_when": "Esiste una repo remota usabile come source of truth.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "f29620d8de367100f1252cf979c13ddbb3c62c3c290a452555c5490dc453836e"
+        },
+        {
+          "task_id": "4.2",
+          "phase_id": "4",
+          "section_ref": "4.2",
+          "title": "4.2 Allineamento repo locale",
+          "activities": [
+            "Verificare struttura locale del progetto.",
+            "Eseguire commit iniziale se necessario.",
+            "Push verso repo remota."
+          ],
+          "verification": [
+            "La repo remota contiene i file attesi."
+          ],
+          "expected_output": "Primo stato versionato del progetto.",
+          "done_when": "Il codice locale è allineato alla repo remota.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "093ece7d10208ff840b5b3cab04bcdb435d11a1993871b095fc49d380d201c42"
+        },
+        {
+          "task_id": "4.3",
+          "phase_id": "4",
+          "section_ref": "4.3",
+          "title": "4.3 Collegamento repo in Databricks",
+          "activities": [
+            "Collegare la repo al workspace Databricks oppure clonarla nell’area repo del workspace.",
+            "Verificare branch attiva.",
+            "Verificare che i file siano visibili nel workspace."
+          ],
+          "verification": [
+            "Apri i file del progetto da Databricks."
+          ],
+          "expected_output": "Repo disponibile nel workspace.",
+          "done_when": "Il progetto è apribile e modificabile da Databricks.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "a088bd218896dca5edb474df8f48e04240a553102ace51af3cb24f9576104c43"
+        },
+        {
+          "task_id": "4.4",
+          "phase_id": "4",
+          "section_ref": "4.4",
+          "title": "4.4 Regole di sync Git",
+          "activities": [
+            "Definire regola operativa minima:",
+            "modifiche locali → commit → push → pull/sync in Databricks;",
+            "evitare modifiche concorrenti sullo stesso file in locale e in workspace;",
+            "gestire conflitti in modo esplicito."
+          ],
+          "verification": [
+            "Simulare una modifica locale e sincronizzarla in Databricks."
+          ],
+          "expected_output": "Mini procedura Git di team/personale.",
+          "done_when": "È chiaro come evitare perdita di modifiche e conflitti opachi.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "743455265853ef340a371670f173dc27c03bcb10f9edc9e7c474065b2ec79b0a"
+        }
+      ]
+    },
+    {
+      "phase_id": "5",
+      "order": 5,
+      "title": "5. Setup compute e runtime",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "5.1",
+          "phase_id": "5",
+          "section_ref": "5.1",
+          "title": "5.1 Scelta compute",
+          "activities": [
+            "Identificare il compute da usare per sviluppo:",
+            "cluster classico;",
+            "all-purpose;",
+            "serverless notebook, se disponibile e compatibile.",
+            "Scegliere una sola opzione consigliata per il progetto.",
+            "**Opzione consigliata**",
+            "**All-purpose cluster dedicato di sviluppo** per debugging più controllabile.",
+            "**Alternativa**",
+            "**Serverless** se già abilitato e compatibile, con meno overhead ma minore controllo su alcuni casi."
+          ],
+          "verification": [
+            "Compute selezionato visibile e avviabile."
+          ],
+          "expected_output": "Nome compute di riferimento documentato.",
+          "done_when": "Esiste un compute standard ufficiale per i test del progetto.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "d0c11d23c654bd1a078b7767dfd8a81932febcaa45754d42a79db643943f7cee"
+        },
+        {
+          "task_id": "5.2",
+          "phase_id": "5",
+          "section_ref": "5.2",
+          "title": "5.2 Attach notebook al compute corretto",
+          "activities": [
+            "Aprire il notebook di test.",
+            "Verificare a quale compute è attaccato.",
+            "Se necessario fare detach/reattach sul compute standard."
+          ],
+          "verification": [
+            "Il notebook risulta attached al compute corretto."
+          ],
+          "expected_output": "Notebook agganciato correttamente.",
+          "done_when": "Tutti i test sono eseguiti sul compute deciso come standard.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "a9b6018cd243a82220ae21e88a20cac5f10c3e58680ecdc9626ae8758c79f3aa"
+        },
+        {
+          "task_id": "5.3",
+          "phase_id": "5",
+          "section_ref": "5.3",
+          "title": "5.3 Sanity check runtime",
+          "activities": [
+            "Verificare versione runtime Python/Databricks.",
+            "Verificare disponibilità librerie chiave.",
+            "Annotare eventuali incompatibilità."
+          ],
+          "verification": [
+            "Una cella stampa versioni Python e librerie."
+          ],
+          "expected_output": "Snapshot ambiente runtime.",
+          "done_when": "Sai esattamente su quale runtime stai lavorando.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "1ab2a3167629e53ec864ea20bec942ee50775d3994752db58861a4f50a15a09f"
+        }
+      ]
+    },
+    {
+      "phase_id": "6",
+      "order": 6,
+      "title": "6. Setup package e dipendenze del progetto",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "6.1",
+          "phase_id": "6",
+          "section_ref": "6.1",
+          "title": "6.1 Verifica struttura package",
+          "activities": [
+            "Controllare presenza di:",
+            "`pyproject.toml`;",
+            "cartella `src/`;",
+            "package con `__init__.py`;",
+            "eventuali script di build/test."
+          ],
+          "verification": [
+            "Path repo e package esistono realmente."
+          ],
+          "expected_output": "Struttura package validata.",
+          "done_when": "Il progetto ha struttura coerente per install/import.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "ab6065295b55de11724a5b8dadfd0d30327f1c8a6dee5e0f6b974d03645d2738"
+        },
+        {
+          "task_id": "6.2",
+          "phase_id": "6",
+          "section_ref": "6.2",
+          "title": "6.2 Strategia di import/install",
+          "activities": [
+            "Scegliere come usare il progetto in Databricks:",
+            "`sys.path` temporaneo per debug rapido;",
+            "installazione editable / package installato per uso più pulito.",
+            "**Opzione consigliata**",
+            "**Installazione del package** come approccio target.",
+            "**Alternativa**",
+            "**`sys.path`** solo per sblocco rapido iniziale."
+          ],
+          "verification": [
+            "Definire approccio target e workaround temporanei."
+          ],
+          "expected_output": "Strategia di import documentata.",
+          "done_when": "È chiaro qual è la soluzione temporanea e qual è quella definitiva.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "7ba435a813a6e737328149c0d593a1cbbbc3c0208703426350b57ce5bf9ca0ec"
+        },
+        {
+          "task_id": "6.3",
+          "phase_id": "6",
+          "section_ref": "6.3",
+          "title": "6.3 Test import package",
+          "activities": [
+            "Eseguire import del package nel notebook.",
+            "Stampare `__file__` del modulo importato.",
+            "Confermare che il modulo caricato sia quello giusto."
+          ],
+          "verification": [
+            "`import` riuscito e path corretto."
+          ],
+          "expected_output": "Evidenza di import OK.",
+          "done_when": "L’import del package funziona in modo ripetibile.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "67e9f6c1074ea3a726c054717aae7d0ddacc24b8f6924684f02d747c9e60e86b"
+        },
+        {
+          "task_id": "6.4",
+          "phase_id": "6",
+          "section_ref": "6.4",
+          "title": "6.4 Gestione dipendenze",
+          "activities": [
+            "Elencare dipendenze del progetto.",
+            "Verificare che siano disponibili sul compute.",
+            "Risolvere eventuali mismatch di versione."
+          ],
+          "verification": [
+            "Import di tutte le librerie critiche riuscito."
+          ],
+          "expected_output": "Dipendenze core validate.",
+          "done_when": "Nessuna dipendenza critica blocca i test.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "2f9af58ce635fe859666a6141a6c70782a2b926076ccd8086779f0c9b57465c3"
+        }
+      ]
+    },
+    {
+      "phase_id": "7",
+      "order": 7,
+      "title": "7. Setup storage, path e dati di test",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "7.1",
+          "phase_id": "7",
+          "section_ref": "7.1",
+          "title": "7.1 Definizione path standard",
+          "activities": [
+            "Definire i path standard per:",
+            "repo sorgente;",
+            "config;",
+            "sample input;",
+            "output;",
+            "eventuali volumi/catalog/schema."
+          ],
+          "verification": [
+            "Tutti i path esistono o sono creabili."
+          ],
+          "expected_output": "Tabella dei path standard di progetto.",
+          "done_when": "I path usati nei test non sono “sparsi” o ambigui.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "d85793418379eb327a91161df49199a379729d1d8089445ae8d251fd1a16eb1f"
+        },
+        {
+          "task_id": "7.2",
+          "phase_id": "7",
+          "section_ref": "7.2",
+          "title": "7.2 Verifica accesso a sample data",
+          "activities": [
+            "Controllare presenza del file sample.",
+            "Controllare accessibilità del config sample.",
+            "Verificare che l’output path sia scrivibile."
+          ],
+          "verification": [
+            "`exists = True` per input e config.",
+            "Test di scrittura directory/file riuscito."
+          ],
+          "expected_output": "Evidenza accesso dati di test.",
+          "done_when": "Il sample può essere letto e l’output può essere scritto.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "256613ef7d0e8bee0746c478801038551292bb3cfc6164e3459c34907ce1b8a3"
+        },
+        {
+          "task_id": "7.3",
+          "phase_id": "7",
+          "section_ref": "7.3",
+          "title": "7.3 Controllo configurazione sample",
+          "activities": [
+            "Aprire il file di configurazione sample.",
+            "Verificare coerenza dei path relativi/assoluti.",
+            "Verificare parametri minimi richiesti dall’applicazione."
+          ],
+          "verification": [
+            "La config è leggibile e semanticamente coerente."
+          ],
+          "expected_output": "Config sample validata.",
+          "done_when": "La config può essere usata in run senza ambiguità sui path.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "84572f5bf439f2de395123ba9f9d5b5f8c8c4ae426e59cb17295efd37cbb599a"
+        }
+      ]
+    },
+    {
+      "phase_id": "8",
+      "order": 8,
+      "title": "8. Test tecnico di bootstrap",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "8.1",
+          "phase_id": "8",
+          "section_ref": "8.1",
+          "title": "8.1 Notebook di diagnostica ambiente",
+          "activities": [
+            "Creare o aggiornare un notebook di test che esegua in sequenza:",
+            "stampa compute/runtime;",
+            "verifica path repo;",
+            "verifica import package;",
+            "verifica config;",
+            "verifica sample file;",
+            "verifica scrittura output path."
+          ],
+          "verification": [
+            "Tutti i check restituiscono stato chiaro."
+          ],
+          "expected_output": "Notebook di bootstrap riusabile.",
+          "done_when": "Esiste un unico notebook per diagnosticare rapidamente l’environment.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "6ee87c595dcc72658e040f506a7c3a2c632b8cd6e8224af218c6bdfd99d0cad4"
+        },
+        {
+          "task_id": "8.2",
+          "phase_id": "8",
+          "section_ref": "8.2",
+          "title": "8.2 Classificazione errori ambiente",
+          "activities": [
+            "Raccogliere gli errori incontrati.",
+            "Classificarli per categoria:",
+            "auth/permessi;",
+            "compute attach;",
+            "import/package;",
+            "I/O path;",
+            "dipendenze;",
+            "runtime metadata/sessione Spark."
+          ],
+          "verification": [
+            "Ogni errore noto ha una causa probabile e una contromisura."
+          ],
+          "expected_output": "Registro problemi environment.",
+          "done_when": "Gli errori non sono più “casuali”, ma tracciati e spiegati.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "6f20d6697c9d1c7b345b9732c7942629b0638af5b4935502fcc9792ab3725865"
+        }
+      ]
+    },
+    {
+      "phase_id": "9",
+      "order": 9,
+      "title": "9. Esecuzione sample end-to-end",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "9.1",
+          "phase_id": "9",
+          "section_ref": "9.1",
+          "title": "9.1 Avvio run reale",
+          "activities": [
+            "Lanciare il progetto sul sample data usando il config validato.",
+            "Evitare workaround non documentati."
+          ],
+          "verification": [
+            "La run parte senza errori bloccanti di environment."
+          ],
+          "expected_output": "Esecuzione reale del parser/processo.",
+          "done_when": "La run raggiunge il punto finale previsto dal flusso.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "f17fcba3b2546b7190a715d84991a42abd42413b80c4b6eef1b1acc99a65ce73"
+        },
+        {
+          "task_id": "9.2",
+          "phase_id": "9",
+          "section_ref": "9.2",
+          "title": "9.2 Validazione output",
+          "activities": [
+            "Verificare che l’output finale venga creato.",
+            "Aprire o ispezionare il contenuto generato.",
+            "Confermare che non sia solo “file creato”, ma file sensato."
+          ],
+          "verification": [
+            "Output leggibile e coerente con il sample."
+          ],
+          "expected_output": "File o tabella finale verificata.",
+          "done_when": "L’utente può mostrare un risultato concreto del test.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "1b015530166280565c9add7378449822d1c435de45b63e02a83b63a8382e4990"
+        },
+        {
+          "task_id": "9.3",
+          "phase_id": "9",
+          "section_ref": "9.3",
+          "title": "9.3 Ripetibilità della run",
+          "activities": [
+            "Rieseguire il test una seconda volta in modo pulito.",
+            "Verificare che il risultato sia stabile."
+          ],
+          "verification": [
+            "Due esecuzioni consecutive non presentano comportamenti casuali."
+          ],
+          "expected_output": "Evidenza di run ripetibile.",
+          "done_when": "Il test non dipende dal caso o da uno stato sporco del notebook.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "9fcb084f375ee917c2555998b7a28680573481ae138c9d79aadad1542ffb941a"
+        }
+      ]
+    },
+    {
+      "phase_id": "10",
+      "order": 10,
+      "title": "10. Stabilizzazione e hardening minimo",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "10.1",
+          "phase_id": "10",
+          "section_ref": "10.1",
+          "title": "10.1 Pulizia workaround temporanei",
+          "activities": [
+            "Identificare workaround usati per sbloccare i test.",
+            "Decidere quali mantenere e quali rimuovere.",
+            "Portare il setup verso una modalità più pulita."
+          ],
+          "verification": [
+            "Il notebook non dipende da hack fragili non documentati."
+          ],
+          "expected_output": "Elenco workaround rimossi o accettati temporaneamente.",
+          "done_when": "L’ambiente è sufficientemente pulito per sviluppo continuativo.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "a7d8d41812412e17c9ec0bf187937df9fbbc71e2fa49216c3bcf40150c206adf"
+        },
+        {
+          "task_id": "10.2",
+          "phase_id": "10",
+          "section_ref": "10.2",
+          "title": "10.2 Struttura standard dei notebook di test",
+          "activities": [
+            "Separare:",
+            "notebook diagnostico ambiente;",
+            "notebook smoke test;",
+            "notebook run sample."
+          ],
+          "verification": [
+            "Ogni notebook ha uno scopo chiaro."
+          ],
+          "expected_output": "Cartella notebook ordinata.",
+          "done_when": "Chiunque capisce dove lanciare check, smoke test e run reale.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "584af4d4a451395a357d26dbc720c8c94ed4cbce3b42e2cfe7d6f4c04bd1df30"
+        },
+        {
+          "task_id": "10.3",
+          "phase_id": "10",
+          "section_ref": "10.3",
+          "title": "10.3 Logging minimo",
+          "activities": [
+            "Far stampare al run almeno:",
+            "compute usato;",
+            "config usato;",
+            "input file;",
+            "output path;",
+            "esito finale."
+          ],
+          "verification": [
+            "L’output di run è leggibile e auditabile."
+          ],
+          "expected_output": "Run log minimo standard.",
+          "done_when": "Ogni esecuzione lascia evidenze utili per debug.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "dc5fed29db43edd55f9221d6215b16a59ad09add6d5bdb9fed71beec436bb4fd"
+        }
+      ]
+    },
+    {
+      "phase_id": "11",
+      "order": 11,
+      "title": "11. Industrializzazione minima dell’environment",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "11.1",
+          "phase_id": "11",
+          "section_ref": "11.1",
+          "title": "11.1 Parametrizzazione del run",
+          "activities": [
+            "Definire i parametri minimi necessari:",
+            "config path;",
+            "input path;",
+            "output path;",
+            "eventuale mode/test flag."
+          ],
+          "verification": [
+            "Il run non dipende da valori hardcoded sparsi."
+          ],
+          "expected_output": "Parametri di esecuzione documentati.",
+          "done_when": "Il flusso può essere rilanciato cambiando pochi parametri chiari.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "1228483aaa4249d5b056538164a30c28267b57d0665fd9c954abc8be275fb5b9"
+        },
+        {
+          "task_id": "11.2",
+          "phase_id": "11",
+          "section_ref": "11.2",
+          "title": "11.2 Predisposizione a job/workflow",
+          "activities": [
+            "Valutare se il notebook/script può essere lanciato come job.",
+            "Identificare input/output e dipendenze minime."
+          ],
+          "verification": [
+            "Esiste una bozza di esecuzione schedulabile."
+          ],
+          "expected_output": "Ready for Jobs: sì/no + motivazione.",
+          "done_when": "È chiaro se l’ambiente è pronto anche per orchestrazione base.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "4d0c3580812ba84180015ed6d01cddbedebe2439006226014152042eeb1560e4"
+        }
+      ]
+    },
+    {
+      "phase_id": "12",
+      "order": 12,
+      "title": "12. Documentazione finale del setup",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "12.1",
+          "phase_id": "12",
+          "section_ref": "12.1",
+          "title": "12.1 README environment setup",
+          "activities": [
+            "Scrivere una guida breve con:",
+            "prerequisiti;",
+            "repo da aprire;",
+            "compute da usare;",
+            "notebook da lanciare;",
+            "sample config;",
+            "output atteso;",
+            "errori comuni."
+          ],
+          "verification": [
+            "Una persona esterna capisce come riprodurre il setup."
+          ],
+          "expected_output": "Documento README o sezione dedicata nella repo.",
+          "done_when": "Il setup è riproducibile senza ricostruirlo “a memoria”.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "3b159abb9c8dbd3cb1d9d808897a3d26274741647647cad5d43b5b9a289bb385"
+        },
+        {
+          "task_id": "12.2",
+          "phase_id": "12",
+          "section_ref": "12.2",
+          "title": "12.2 Stato finale e checklist di chiusura",
+          "activities": [
+            "Compilare la checklist finale di chiusura.",
+            "### Checklist di chiusura",
+            "[ ] Accesso workspace verificato",
+            "[ ] Permessi minimi verificati",
+            "[ ] Tool locali configurati",
+            "[ ] Profilo Databricks locale funzionante",
+            "[ ] Repo remota configurata",
+            "[ ] Repo disponibile in Databricks",
+            "[ ] Regole Git minime definite",
+            "[ ] Compute standard scelto",
+            "[ ] Notebook attached al compute corretto",
+            "[ ] Runtime validato",
+            "[ ] Package structure validata",
+            "[ ] Import package riuscito",
+            "[ ] Dipendenze core verificate",
+            "[ ] Path standard documentati",
+            "[ ] Sample config verificata",
+            "[ ] Input sample accessibile",
+            "[ ] Output path scrivibile",
+            "[ ] Notebook diagnostico pronto",
+            "[ ] Run sample end-to-end eseguita",
+            "[ ] Output finale validato",
+            "[ ] Run ripetibile verificata",
+            "[ ] Workaround critici ridotti",
+            "[ ] Parametri run documentati",
+            "[ ] README setup scritto"
+          ],
+          "verification": [],
+          "expected_output": "Stato finale compilato.",
+          "done_when": "Tutti i punti sopra sono chiusi oppure i blocchi residui sono esplicitati.",
+          "tracking_template": "Status:\nOwner:\nData:\nEvidenza:\nNote/Rischi:",
+          "initial_status": "Backlog",
+          "content_hash": "c6da8ac03d65f297ace6cf5bf5831249150bb65b0294ac8676e816d882a7d91f"
+        }
+      ]
+    },
+    {
+      "phase_id": "13",
+      "order": 13,
+      "title": "13. Registro avanzamento sintetico",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "13.1",
+          "phase_id": "13",
+          "section_ref": "13.1",
+          "title": "Tabella stato avanzamento",
+          "activities": [
+            "| ID | Macrofase | Stato | % fase | Dipendenze | Evidenza | Note |",
+            "|---|---|---:|---:|---|---|---|",
+            "| 1 | Definizione perimetro | TODO | 0 | - | - | - |",
+            "| 2 | Accessi e prerequisiti | TODO | 0 | 1 | - | - |",
+            "| 3 | Connessione locale ↔ Databricks | TODO | 0 | 2 | - | - |",
+            "| 4 | Setup repository | TODO | 0 | 2,3 | - | - |",
+            "| 5 | Setup compute e runtime | TODO | 0 | 2 | - | - |",
+            "| 6 | Setup package e dipendenze | TODO | 0 | 4,5 | - | - |",
+            "| 7 | Storage, path e sample data | TODO | 0 | 2,5 | - | - |",
+            "| 8 | Diagnostica ambiente | TODO | 0 | 5,6,7 | - | - |",
+            "| 9 | Run sample end-to-end | TODO | 0 | 6,7,8 | - | - |",
+            "| 10 | Stabilizzazione | TODO | 0 | 9 | - | - |",
+            "| 11 | Industrializzazione minima | TODO | 0 | 10 | - | - |",
+            "| 12 | Documentazione finale | TODO | 0 | 11 | - | - |"
+          ],
+          "verification": [],
+          "expected_output": "",
+          "done_when": "",
+          "tracking_template": "N/A",
+          "initial_status": "Backlog",
+          "content_hash": "a89bda7f066e366cd3da98289cc11f0cb7f7090a4bd17cd1d19d35c23185483d"
+        }
+      ]
+    },
+    {
+      "phase_id": "14",
+      "order": 14,
+      "title": "14. Best practice operative",
+      "summary": "",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "14.1",
+          "phase_id": "14",
+          "section_ref": "14.1",
+          "title": "Da fare sempre",
+          "activities": [
+            "Tenere **un solo compute standard** per i test iniziali.",
+            "Usare **path documentati** e non improvvisati cella per cella.",
+            "Distinguere chiaramente **workaround temporanei** da **soluzioni definitive**.",
+            "Salvare sempre una **evidenza verificabile** per ogni step chiuso.",
+            "Fare sync Git in modo disciplinato, evitando modifiche parallele sullo stesso file.",
+            "Testare prima un **sample piccolo e ripetibile**."
+          ],
+          "verification": [],
+          "expected_output": "",
+          "done_when": "",
+          "tracking_template": "N/A",
+          "initial_status": "Backlog",
+          "content_hash": "322bf7bd3bac3570a560a053d29f2153027444211fb960903289af674ce968f9"
+        },
+        {
+          "task_id": "14.2",
+          "phase_id": "14",
+          "section_ref": "14.2",
+          "title": "Errori comuni da evitare",
+          "activities": [
+            "Considerare “setup concluso” solo perché l’`import` funziona.",
+            "Mescolare problemi di codice con problemi di environment.",
+            "Cambiare continuamente compute senza tracciare gli effetti.",
+            "Usare notebook sporchi come unica fonte di verità.",
+            "Non annotare quale config/path/output è stato usato in una run."
+          ],
+          "verification": [],
+          "expected_output": "",
+          "done_when": "",
+          "tracking_template": "N/A",
+          "initial_status": "Backlog",
+          "content_hash": "dad3b3131654ea0a671493a68e31e16a4cc9216ff674494663fbdc999268f766"
+        }
+      ]
+    },
+    {
+      "phase_id": "15",
+      "order": 15,
+      "title": "15. Criterio finale di completamento",
+      "summary": "L’attività di setup environment si considera **conclusa** quando sono vere contemporaneamente queste condizioni:\n1. il workspace è accessibile e il compute standard è definito;\n2. la repo è sincronizzata e il progetto è apribile da Databricks;\n3. il package/import è stabile e documentato;\n4. sample config e sample input sono accessibili;\n5. il run end-to-end produce un output verificabile;\n6. il test è ripetibile;\n7. esiste una documentazione minima che permette di rifare il setup senza dipendere dalla memoria.",
+      "dependencies": [],
+      "tasks": []
+    },
+    {
+      "phase_id": "16",
+      "order": 16,
+      "title": "16. Prossimo aggiornamento consigliato",
+      "summary": "Alla prossima revisione di questo file, aggiungere una sezione finale:",
+      "dependencies": [],
+      "tasks": [
+        {
+          "task_id": "16.1",
+          "phase_id": "16",
+          "section_ref": "16.1",
+          "title": "Stato attuale reale",
+          "activities": [
+            "**Percentuale complessiva**:",
+            "**Completato**:",
+            "**In corso**:",
+            "**Bloccato**:",
+            "**Prossimo step operativo**:",
+            "**Rischio principale**:",
+            "**Decisione richiesta**:"
+          ],
+          "verification": [],
+          "expected_output": "",
+          "done_when": "",
+          "tracking_template": "N/A",
+          "initial_status": "Backlog",
+          "content_hash": "88713698180a549d75491bf22f9810de839fdb78a19051bce0bc16e3232d4796"
         }
       ]
     }

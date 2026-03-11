@@ -18,6 +18,9 @@ class Task:
     tracking_template: str = ""
     initial_status: str = ""
     content_hash: str = ""
+    task_type: str = ""
+    publish_policy: str = ""
+    content_kind: str = ""
 
     def to_dict(self) -> Dict[str, object]:
         return asdict(self)
@@ -44,6 +47,7 @@ class ProjectImport:
     source_hash: str
     title: str
     imported_at: str
+    summary: str = ""
     phases: List[Phase] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, object]:
@@ -52,6 +56,7 @@ class ProjectImport:
             "source_hash": self.source_hash,
             "title": self.title,
             "imported_at": self.imported_at,
+            "summary": self.summary,
             "phases": [phase.to_dict() for phase in self.phases],
         }
 
@@ -112,7 +117,8 @@ def validate_project(project: ProjectImport) -> List[str]:
         if not phase.title:
             errors.append(f"Phase {phase.phase_id} title is required.")
         if not phase.tasks:
-            errors.append(f"Phase {phase.phase_id} has no tasks.")
+            if not (phase.summary or "").strip():
+                errors.append(f"Phase {phase.phase_id} has no tasks or summary.")
         for task in phase.tasks:
             if not task.title:
                 errors.append(f"Task in phase {phase.phase_id} missing title.")
