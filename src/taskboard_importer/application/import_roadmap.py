@@ -151,9 +151,135 @@ def import_roadmap(
                 )
             )
     else:
-        # TODO: Implement actual GitHub publishing
-        # This would use GitHubAdapter to create/update issues
-        pass
+        # Real GitHub publishing
+        if not (token and repo_owner and repo_name):
+            raise ValueError(
+                "GitHub publish requires: token, repo_owner, repo_name"
+            )
+        
+        from ..infrastructure.github import IssuesClient, ProjectsV2Client
+        
+        issues_client = IssuesClient(token, dry_run=False)
+        projects_client = ProjectsV2Client(token, dry_run=False) if project_number else None
+        project_id = None
+        
+        if projects_client and project_number:
+            try:
+                project_id = projects_client.get_project_id(
+                    repo_owner, repo_name, project_number
+                )
+            except Exception as e:
+                print(f"Warning: Could not retrieve project {project_number}: {e}")
+        
+        for decision in decisions:
+            task = decision.task
+            policy = getattr(task, "publish_policy", "") or "unknown"
+            
+            if policy not in ["publish_as_issue", "publish_as_doc_issue"]:
+                # Skip non-publishable policies
+                publish_results.append(
+                    PublishResult(
+                        task_id=task.task_id,
+                        github_issue_number=None,
+                        project_item_id=None,
+                        publish_status="skipped",
+                        action="policy_skip",
+                        phase_label=phase_titles.get(task.phase_id, task.phase_id),
+                        section_ref=task.section_ref,
+                        matched_by=decision.matched_by or "section_ref",
+                        previous_hash=decision.previous_hash,
+                        new_hash=task.content_hash,
+                        project_sync_status="not_applicable",
+                    )
+                )
+                continue
+            
+            # Build issue content
+            title = f"[{task.task_id}] {task.title}" if task.title else f"[{task.task_id}] Task"
+            body = task.description or ""
+            labels = []
+            if task.task_type:
+                labels.append(task.task_type)
+            
+            issue_number = None
+            issue_node_id = None
+            project_item_id = None
+            action = None
+            status = None
+            sync_status = "pending"
+            
+            try:
+                if decision.action == "create":
+                    # Create new issue
+                    issue_number, issue_node_id = issues_client.create_issue(
+                        repo_owner=repo_owner,
+                        repo_name=repo_name,
+                        title=title,
+                        body=body,
+                        labels=labels if labels else None,
+                    )
+                    action = "created"
+                    status = "published"
+                    
+                    # Add to project if configured
+                    if project_id and issue_node_id:
+                        try:
+                            project_item_id = projects_client.add_issue_to_project(
+                                project_id, issue_node_id
+                            )
+                            sync_status = "synced"
+                        except Exception as e:
+                            print(f"Warning: Could not add issue to project: {e}")
+                            sync_status = "sync_failed"
+                
+                elif decision.action == "update":
+                    # Update existing issue
+                    if decision.matched_by == "github_issue_number":
+                        issue_number = int(decision.previous_hash or 0)
+                    if issue_number:
+                        issues_client.update_issue(
+                            repo_owner=repo_owner,
+                            repo_name=repo_name,
+                            issue_number=issue_number,
+                            title=title,
+                            body=body,
+                            labels=labels if labels else None,
+                        )
+                        action = "updated"
+                        status = "published"
+                        sync_status = "synced"
+                    else:
+                        # Cannot find issue to update
+                        action = "update_failed"
+                        status = "error"
+                        sync_status = "sync_failed"
+                
+                else:  # skip
+                    action = "skipped"
+                    status = "skipped"
+                    sync_status = "not_applicable"
+            
+            except Exception as e:
+                action = "error"
+                status = "error"
+                sync_status = "sync_failed"
+                print(f"Error publishing task {task.task_id}: {e}")
+            
+            publish_results.append(
+                PublishResult(
+                    task_id=task.task_id,
+                    github_issue_number=issue_number,
+                    project_item_id=project_item_id,
+                    publish_status=status,
+                    action=action,
+                    phase_label=phase_titles.get(task.phase_id, task.phase_id),
+                    section_ref=task.section_ref,
+                    matched_by=decision.matched_by or "section_ref",
+                    previous_hash=decision.previous_hash,
+                    new_hash=task.content_hash,
+                    project_sync_status=sync_status,
+                )
+            )
 
     # 7. SAVE OUTPUTS
     if output_json:

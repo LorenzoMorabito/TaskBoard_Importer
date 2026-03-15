@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-taskboard = "taskboard_importer.cli:main"
+taskboard = "taskboard_importer.presentation.cli:main"
 
 [project.optional-dependencies]
 dev = [

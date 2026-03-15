@@ -52,10 +52,29 @@ taskboard import-roadmap \
 
 ### Pubblicare su GitHub
 
+**Nota:** Questo comando richiede un GitHub Personal Access Token (PAT) con permessi `repo` e `project` (se usi GitHub Projects).
+
 ```bash
+# Pubblicare task su GitHub Issues
+export GITHUB_TOKEN="ghp_xxxxx..."
+
 taskboard import-roadmap \
-  --project ./projects/my-roadmap
+  --project ./projects/my-project \
+  --repo-owner kirey \
+  --repo-name my-repo \
+  --token $GITHUB_TOKEN \
+  --project-number 5          # (opzionale) Aggiungi a Project V2
 ```
+
+**Sequenza consigliata:**
+1. **Primo**: Esegui con `--dry-run` per preview
+2. **Secondo**: Esegui senza `--dry-run` per publish reale
+3. **Verifica**: Controlla GitHub Issues per i nuovi task
+
+**Output:**
+- Ogni task genera una GitHub Issue con label auto-assegnato
+- Se `--project-number` è fornito, le issue vengono aggiunte al Project V2
+- `manifest.json` registra tutti i publish results (issue_number, status)
 
 ## 🏗️ Architettura Modulare
 
