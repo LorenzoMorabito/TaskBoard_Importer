@@ -10,8 +10,8 @@ Sistema deterministico per trasformare roadmap Markdown strutturate in task norm
 - ✅ **Deduplicazione** intelligente con politiche skip/create/update
 - ✅ **Pubblicazione selettiva** su GitHub (4 livelli di policy)
 - ✅ **Architettura modulare** - ogni modulo riusabile in pipeline diverse
-- ✅ **Test coverage** completo
-- ✅ **Preview CLI** con tipo e policy
+- ✅ **Test suite** con regressioni su CLI e application layer
+- ✅ **CLI** allineata a config file, env e publish reale
 - ✅ **Dry-run** preview-only mode
 
 ## 🚀 Quick Start
@@ -63,7 +63,7 @@ taskboard import-roadmap \
   --repo-owner kirey \
   --repo-name my-repo \
   --token $GITHUB_TOKEN \
-  --project-number 5          # (opzionale) Aggiungi a Project V2
+  --project-number 5
 ```
 
 **Sequenza consigliata:**
@@ -72,9 +72,10 @@ taskboard import-roadmap \
 3. **Verifica**: Controlla GitHub Issues per i nuovi task
 
 **Output:**
-- Ogni task genera una GitHub Issue con label auto-assegnato
-- Se `--project-number` è fornito, le issue vengono aggiunte al Project V2
-- `manifest.json` registra tutti i publish results (issue_number, status)
+- I task `publish_as_issue` generano o aggiornano GitHub Issue
+- I task `publish_as_doc_issue` restano deferred in manifest
+- Se `--project-number` è fornito, le issue create o aggiornate possono essere sincronizzate al Project V2
+- `manifest.json` registra fingerprints e publish results
 
 ## 🏗️ Architettura Modulare
 
@@ -99,7 +100,6 @@ Vedi [docs/architecture.md](docs/architecture.md) per dettagli completi.
 taskboard init-project \
   --path ./projects/my-project \
   --title "Project Title" \
-  --template-path ./docs/templates/standard \
   --repo-owner kirey \
   --repo-name my-repo
 ```
@@ -110,6 +110,9 @@ taskboard import-roadmap \
   --project ./projects/my-project \
   --dry-run                              # Preview solo, nessun publish
   --dedupe-policy update                 # skip, create, o update
+  --repo-owner kirey \
+  --repo-name my-repo \
+  --token $GITHUB_TOKEN \
   --previous-manifest outputs/manifest.json
 ```
 
@@ -117,6 +120,7 @@ taskboard import-roadmap \
 ```bash
 taskboard bootstrap-github \
   --project ./projects/my-project \
+  --token $GITHUB_TOKEN \
   --labels "Phase 1" "Phase 2" "Documentation"
 ```
 
@@ -144,7 +148,7 @@ Task(
 | Task Type | Detect | Policy | Output |
 |-----------|--------|--------|--------|
 | **operational_task** | verification/output/done_when | publish_as_issue | GitHub Issue |
-| **checklist** | [x] items o keyword "checklist" | publish_as_doc_issue | Deferred |
+| **checklist** | [x] items o keyword "checklist" | publish_as_doc_issue | Deferred in manifest |
 | **documentation** | No verification + doc hints | publish_as_note | Manifest only |
 | **status_register** | Markdown tables | publish_as_note | Manifest only |
 
@@ -279,7 +283,8 @@ taskboard import-roadmap \
   --project ./my-project \
   --repo-owner kirey \
   --repo-name task-tracker \
-  --token ghp_xxx
+  --token ghp_xxx \
+  --project-number 5
 ```
 
 ## 📝 Esempio Completo
@@ -323,7 +328,8 @@ taskboard import-roadmap \
 taskboard import-roadmap \
   --project ./projects/q1-roadmap \
   --repo-owner myorg \
-  --repo-name product-roadmap
+  --repo-name product-roadmap \
+  --token $GITHUB_TOKEN
 ```
 
 ## 🛠️ Development
@@ -370,4 +376,3 @@ MIT - See LICENSE file
 - [ ] Custom policy plugins
 - [ ] Performance caching layer
 - [ ] Web UI for preview/publish
-

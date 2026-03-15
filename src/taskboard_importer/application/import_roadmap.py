@@ -15,8 +15,8 @@ from typing import Dict, List, Optional
 from ..domain import ImportRun, ProjectImport, PublishResult, validate_project
 from ..parsing import parse_markdown
 from ..policies import normalize_project
+from ..policies.publish_rules import get_publishable_policies
 from ..sync import (
-    compute_task_hash,
     load_manifest_details,
     plan_dedupe,
     save_manifest,
@@ -58,6 +58,64 @@ def _count_task_policies(tasks: List) -> Dict[str, int]:
         else:
             counts[policy] += 1
     return counts
+
+
+def _resolve_existing_issue_number(
+    task, decision, previous_issue_map: Dict[str, int]
+) -> Optional[int]:
+    """Resolve previously published issue number for a task."""
+    keys = [task.section_ref, task.task_id]
+    if decision.matched_by == "section_ref":
+        keys = [task.section_ref, task.task_id]
+    elif decision.matched_by == "task_id":
+        keys = [task.task_id, task.section_ref]
+
+    for key in keys:
+        if key and key in previous_issue_map:
+            return previous_issue_map[key]
+    return None
+
+
+def _resolve_existing_project_item_id(
+    task, decision, previous_project_item_map: Dict[str, str]
+) -> Optional[str]:
+    """Resolve previously synced project item ID for a task."""
+    keys = [task.section_ref, task.task_id]
+    if decision.matched_by == "section_ref":
+        keys = [task.section_ref, task.task_id]
+    elif decision.matched_by == "task_id":
+        keys = [task.task_id, task.section_ref]
+
+    for key in keys:
+        if key and key in previous_project_item_map:
+            return previous_project_item_map[key]
+    return None
+
+
+def _build_issue_body(task) -> str:
+    """Render a deterministic issue body from task fields."""
+    sections = []
+
+    if task.activities:
+        sections.append("## Activities")
+        sections.extend(f"- {item}" for item in task.activities)
+
+    if task.verification:
+        sections.append("")
+        sections.append("## Verification")
+        sections.extend(f"- {item}" for item in task.verification)
+
+    if task.expected_output.strip():
+        sections.append("")
+        sections.append("## Expected Output")
+        sections.append(task.expected_output.strip())
+
+    if task.done_when.strip():
+        sections.append("")
+        sections.append("## Done When")
+        sections.append(task.done_when.strip())
+
+    return "\n".join(sections).strip()
 
 
 def import_roadmap(
@@ -119,13 +177,21 @@ def import_roadmap(
     publish_results: List[PublishResult] = []
     phase_titles = {phase.phase_id: phase.title for phase in project.phases}
 
-    if dry_run:
+    publishable_policies = {policy.value for policy in get_publishable_policies()}
+
+    if dry_run or not publish_to_github:
         # Generate dry-run results
         for decision in decisions:
             task = decision.task
             policy = getattr(task, "publish_policy", "") or "unknown"
+            existing_issue_number = _resolve_existing_issue_number(
+                task, decision, prev_issue_map
+            )
+            existing_project_item_id = _resolve_existing_project_item_id(
+                task, decision, prev_project_item_map
+            )
 
-            if policy == "publish_as_issue":
+            if policy in publishable_policies:
                 action = "dry_run" if decision.action != "skip" else "skipped"
                 status = "dry_run"
             elif policy == "publish_as_doc_issue":
@@ -138,8 +204,8 @@ def import_roadmap(
             publish_results.append(
                 PublishResult(
                     task_id=task.task_id,
-                    github_issue_number=None,
-                    project_item_id=None,
+                    github_issue_number=existing_issue_number,
+                    project_item_id=existing_project_item_id,
                     publish_status=status,
                     action=action,
                     phase_label=phase_titles.get(task.phase_id, task.phase_id),
@@ -174,14 +240,38 @@ def import_roadmap(
         for decision in decisions:
             task = decision.task
             policy = getattr(task, "publish_policy", "") or "unknown"
+            existing_issue_number = _resolve_existing_issue_number(
+                task, decision, prev_issue_map
+            )
+            existing_project_item_id = _resolve_existing_project_item_id(
+                task, decision, prev_project_item_map
+            )
             
-            if policy not in ["publish_as_issue", "publish_as_doc_issue"]:
+            if policy == "publish_as_doc_issue":
+                publish_results.append(
+                    PublishResult(
+                        task_id=task.task_id,
+                        github_issue_number=existing_issue_number,
+                        project_item_id=existing_project_item_id,
+                        publish_status="deferred",
+                        action="doc_issue_deferred",
+                        phase_label=phase_titles.get(task.phase_id, task.phase_id),
+                        section_ref=task.section_ref,
+                        matched_by=decision.matched_by or "section_ref",
+                        previous_hash=decision.previous_hash,
+                        new_hash=task.content_hash,
+                        project_sync_status="not_applicable",
+                    )
+                )
+                continue
+
+            if policy not in publishable_policies:
                 # Skip non-publishable policies
                 publish_results.append(
                     PublishResult(
                         task_id=task.task_id,
-                        github_issue_number=None,
-                        project_item_id=None,
+                        github_issue_number=existing_issue_number,
+                        project_item_id=existing_project_item_id,
                         publish_status="skipped",
                         action="policy_skip",
                         phase_label=phase_titles.get(task.phase_id, task.phase_id),
@@ -196,14 +286,14 @@ def import_roadmap(
             
             # Build issue content
             title = f"[{task.task_id}] {task.title}" if task.title else f"[{task.task_id}] Task"
-            body = task.description or ""
+            body = _build_issue_body(task)
             labels = []
             if task.task_type:
                 labels.append(task.task_type)
             
             issue_number = None
             issue_node_id = None
-            project_item_id = None
+            project_item_id = existing_project_item_id
             action = None
             status = None
             sync_status = "pending"
@@ -234,8 +324,7 @@ def import_roadmap(
                 
                 elif decision.action == "update":
                     # Update existing issue
-                    if decision.matched_by == "github_issue_number":
-                        issue_number = int(decision.previous_hash or 0)
+                    issue_number = existing_issue_number
                     if issue_number:
                         issues_client.update_issue(
                             repo_owner=repo_owner,
@@ -247,7 +336,19 @@ def import_roadmap(
                         )
                         action = "updated"
                         status = "published"
-                        sync_status = "synced"
+                        sync_status = "synced" if project_item_id else "not_synced"
+                        if project_id and not project_item_id:
+                            issue_data = issues_client.get_issue(
+                                repo_owner=repo_owner,
+                                repo_name=repo_name,
+                                issue_number=issue_number,
+                            )
+                            issue_node_id = issue_data.get("node_id")
+                            if issue_node_id:
+                                project_item_id = projects_client.add_issue_to_project(
+                                    project_id, issue_node_id
+                                )
+                                sync_status = "synced"
                     else:
                         # Cannot find issue to update
                         action = "update_failed"
@@ -268,7 +369,7 @@ def import_roadmap(
             publish_results.append(
                 PublishResult(
                     task_id=task.task_id,
-                    github_issue_number=issue_number,
+                    github_issue_number=issue_number or existing_issue_number,
                     project_item_id=project_item_id,
                     publish_status=status,
                     action=action,

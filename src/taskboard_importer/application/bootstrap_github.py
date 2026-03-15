@@ -1,7 +1,4 @@
-"""GitHub bootstrap orchestrator.
-
-Sets up GitHub repository and project for integration.
-"""
+"""GitHub bootstrap orchestrator."""
 
 from typing import Optional
 
@@ -14,6 +11,7 @@ def bootstrap_github(
     repo_owner: str,
     repo_name: str,
     create_labels: Optional[list[str]] = None,
+    project_number: Optional[int] = None,
 ) -> None:
     """Bootstrap GitHub repository for use with importer.
     
@@ -27,6 +25,7 @@ def bootstrap_github(
         repo_owner: GitHub repo owner
         repo_name: GitHub repo name
         create_labels: List of labels to create
+        project_number: Reserved for future Project V2 bootstrap steps
     """
     client = GitHubClient(token, dry_run=False)
 

@@ -22,16 +22,14 @@ def load_project_config(project_path: str) -> Dict[str, Any]:
 
     # Try YAML first
     if os.path.exists(yaml_path):
-        try:
-            import yaml
-            with open(yaml_path, "r") as f:
-                return yaml.safe_load(f)
-        except ImportError:
-            pass
+        import yaml
+
+        with open(yaml_path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
 
     # Try JSON
     if os.path.exists(json_path):
-        with open(json_path, "r") as f:
+        with open(json_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     raise FileNotFoundError(f"No project config found in {project_path}")

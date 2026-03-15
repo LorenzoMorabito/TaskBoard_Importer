@@ -4,6 +4,7 @@ Delegates to application layer orchestrators.
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -12,7 +13,57 @@ from taskboard_importer.application import (
     import_roadmap,
     init_workspace,
 )
-from taskboard_importer.infrastructure.workspace import load_project_config
+from taskboard_importer.infrastructure.workspace import (
+    get_config_value,
+    load_project_config,
+)
+
+
+def _coerce_project_number(value):
+    """Normalize project number from CLI, config, or env."""
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Invalid project number: {value}") from exc
+
+
+def _resolve_repo_owner(config, value):
+    return (
+        value
+        or get_config_value(config, "github.repo_owner")
+        or os.getenv("REPO_OWNER")
+    )
+
+
+def _resolve_repo_name(config, value):
+    return (
+        value
+        or get_config_value(config, "github.repo_name")
+        or os.getenv("REPO_NAME")
+    )
+
+
+def _resolve_project_number(config, value):
+    return _coerce_project_number(
+        value
+        if value is not None
+        else get_config_value(
+            config, "github.project_number", os.getenv("PROJECT_NUMBER")
+        )
+    )
+
+
+def _resolve_labels(config, explicit_labels):
+    if explicit_labels:
+        return explicit_labels
+
+    labels = config.get("labels", [])
+    if isinstance(labels, list):
+        return labels
+
+    return ["Documentation", "Phase 1", "Phase 2"]
 
 
 def main():
@@ -52,21 +103,30 @@ def main():
     import_parser.add_argument(
         "--previous-manifest", help="Path to previous manifest.json"
     )
+    import_parser.add_argument("--repo-owner", help="GitHub repository owner")
+    import_parser.add_argument("--repo-name", help="GitHub repository name")
+    import_parser.add_argument("--token", help="GitHub token")
+    import_parser.add_argument(
+        "--project-number", type=int, help="GitHub project number"
+    )
+    import_parser.add_argument(
+        "--default-status",
+        help="Default status assigned to imported tasks",
+    )
 
     # bootstrap-github command
     bootstrap_parser = subparsers.add_parser(
         "bootstrap-github", help="Bootstrap GitHub project"
     )
     bootstrap_parser.add_argument("--project", required=True, help="Project path")
-    bootstrap_parser.add_argument(
-        "--repo-owner", required=True, help="GitHub repository owner"
-    )
-    bootstrap_parser.add_argument(
-        "--repo-name", required=True, help="GitHub repository name"
-    )
+    bootstrap_parser.add_argument("--repo-owner", help="GitHub repository owner")
+    bootstrap_parser.add_argument("--repo-name", help="GitHub repository name")
     bootstrap_parser.add_argument("--token", help="GitHub token")
     bootstrap_parser.add_argument(
         "--project-number", type=int, help="GitHub project number"
+    )
+    bootstrap_parser.add_argument(
+        "--labels", nargs="*", help="Labels to ensure in the repository"
     )
 
     args = parser.parse_args()
@@ -86,7 +146,7 @@ def _cmd_init_project(args):
     """Handle init-project command."""
     try:
         init_workspace(
-            path=args.path,
+            project_path=args.path,
             title=args.title,
             repo_owner=args.repo_owner,
             repo_name=args.repo_name,
@@ -103,6 +163,15 @@ def _cmd_import_roadmap(args):
     try:
         # Load project config
         config = load_project_config(args.project)
+        repo_owner = _resolve_repo_owner(config, args.repo_owner)
+        repo_name = _resolve_repo_name(config, args.repo_name)
+        project_number = _resolve_project_number(config, args.project_number)
+        token = args.token or os.getenv("GITHUB_TOKEN")
+        default_status = (
+            args.default_status
+            or os.getenv("DEFAULT_STATUS")
+            or get_config_value(config, "publishing.default_status", "Backlog")
+        )
 
         # Prepare roadmap path
         roadmap_path = Path(args.project) / "roadmap" / "roadmap.md"
@@ -124,6 +193,12 @@ def _cmd_import_roadmap(args):
             manifest_json=str(manifest_json),
             previous_manifest=args.previous_manifest,
             dedupe_policy=args.dedupe_policy,
+            publish_to_github=not args.dry_run,
+            repo_owner=repo_owner,
+            repo_name=repo_name,
+            token=token,
+            project_number=project_number,
+            default_status=default_status,
             dry_run=args.dry_run,
         )
 
@@ -150,19 +225,24 @@ def _cmd_bootstrap_github(args):
     try:
         # Load project config
         config = load_project_config(args.project)
+        repo_owner = _resolve_repo_owner(config, args.repo_owner)
+        repo_name = _resolve_repo_name(config, args.repo_name)
+        token = args.token or os.getenv("GITHUB_TOKEN")
+        project_number = _resolve_project_number(config, args.project_number)
+        labels = _resolve_labels(config, args.labels)
 
-        # Extract labels from config or use defaults
-        labels = config.get("labels", [])
-        if not labels:
-            labels = ["Documentation", "Phase 1", "Phase 2"]
+        if not token:
+            raise ValueError("GitHub bootstrap requires a token")
+        if not repo_owner or not repo_name:
+            raise ValueError("GitHub bootstrap requires repo_owner and repo_name")
 
         # Run bootstrap
         bootstrap_github(
-            repo_owner=args.repo_owner,
-            repo_name=args.repo_name,
-            labels=labels,
-            token=args.token,
-            project_number=args.project_number,
+            repo_owner=repo_owner,
+            repo_name=repo_name,
+            create_labels=labels,
+            token=token,
+            project_number=project_number,
         )
 
         print(f"✅ GitHub project bootstrapped")
