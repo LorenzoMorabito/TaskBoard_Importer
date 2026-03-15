@@ -1,6 +1,7 @@
-from taskboard_importer.normalizer import normalize_project
-from taskboard_importer.parser_markdown import parse_markdown
-from taskboard_importer.schema import validate_project
+"""Tests for mapping, normalization and validation using new modules."""
+from taskboard_importer.policies import normalize_project
+from taskboard_importer.parsing import parse_markdown
+from taskboard_importer.domain import validate_project
 
 
 def test_normalize_defaults():

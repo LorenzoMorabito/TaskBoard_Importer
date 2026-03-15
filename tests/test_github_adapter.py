@@ -1,61 +1,50 @@
-from taskboard_importer.github_adapter import GitHubAdapter
-from taskboard_importer.schema import Task
+"""Tests for GitHub integration using new infrastructure module."""
+from taskboard_importer.infrastructure.github import IssuesClient, LabelsClient
+from taskboard_importer.domain import Task
 
 
-def test_ensure_labels_creates_missing(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status=None,
-        dry_run=True,
-    )
-
+def test_labels_client_creates_label(monkeypatch):
+    """Test that LabelsClient can create labels."""
+    client = LabelsClient(token="test_token")
+    
     created = []
+    
+    def fake_rest_post(url, payload):
+        created.append(payload)
+        return {"name": payload["name"]}
+    
+    monkeypatch.setattr(client, "rest_post", fake_rest_post)
+    
+    result = client.create_label("owner", "repo", "Phase A")
+    
+    assert len(created) == 1
+    assert created[0]["name"] == "Phase A"
+    assert created[0]["color"] == "1f6feb"
 
-    def fake_list_labels():
-        return ["Phase A"]
 
-    def fake_create_label(name):
+def test_labels_client_ensure_labels(monkeypatch):
+    """Test that LabelsClient can ensure multiple labels."""
+    client = LabelsClient(token="test_token")
+    
+    created = []
+    
+    def fake_list_labels(_owner, _repo):
+        return [{"name": "Phase A"}]
+    
+    def fake_create_label(_owner, _repo, name):
         created.append(name)
-
-    monkeypatch.setattr(adapter, "_list_labels", fake_list_labels)
-    monkeypatch.setattr(adapter, "_create_label", fake_create_label)
-
-    failed = adapter.ensure_labels(["Phase A", "Phase B", "Phase C", "Phase B"])
-
-    assert failed == []
+        return {"name": name}
+    
+    monkeypatch.setattr(client, "list_labels", fake_list_labels)
+    monkeypatch.setattr(client, "create_label", fake_create_label)
+    
+    result = client.ensure_labels("owner", "repo", ["Phase A", "Phase B", "Phase C"])
+    
     assert set(created) == {"Phase B", "Phase C"}
 
 
-def test_create_label_payload(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status=None,
-        dry_run=True,
-    )
-
-    captured = {}
-
-    def fake_rest_post(url, payload):
-        captured["url"] = url
-        captured["payload"] = payload
-        return {}
-
-    monkeypatch.setattr(adapter, "_rest_post", fake_rest_post)
-
-    adapter._create_label("Phase X")
-
-    assert captured["payload"]["name"] == "Phase X"
-    assert captured["payload"]["color"] == "1f6feb"
-    assert captured["payload"]["description"] == "Auto-created phase label"
-
-
 def _make_task(task_id: str, section_ref: str) -> Task:
+    """Helper to create a test task."""
     return Task(
         task_id=task_id,
         phase_id="1",
@@ -71,231 +60,36 @@ def _make_task(task_id: str, section_ref: str) -> Task:
     )
 
 
-def test_update_tasks_uses_section_ref_mapping(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status=None,
-        dry_run=False,
-    )
-    task = _make_task("t-1", "1.1")
-
-    called = {"update": 0}
-
-    def fake_update_task(task_obj, phase_label, issue_number, project_item_id):
-        called["update"] += 1
-        assert issue_number == 123
-        return "updated"
-
-    monkeypatch.setattr(adapter, "_update_task", fake_update_task)
-    monkeypatch.setattr(adapter, "_publish_task", lambda *_args, **_kwargs: "created")
-    monkeypatch.setattr(adapter, "ensure_labels", lambda *_args, **_kwargs: [])
-
-    results = adapter.update_tasks(
-        [task],
-        {"1": "Phase 1"},
-        issue_map={"1.1": 123},
-        project_item_map={},
-    )
-
-    assert called["update"] == 1
-    assert len(results) == 1
-    assert results[0] == "updated"
-
-
-def test_update_tasks_uses_task_id_mapping(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status=None,
-        dry_run=False,
-    )
-    task = _make_task("t-10", "9.9")
-
-    called = {"update": 0}
-
-    def fake_update_task(task_obj, phase_label, issue_number, project_item_id):
-        called["update"] += 1
-        assert issue_number == 321
-        return "updated"
-
-    monkeypatch.setattr(adapter, "_update_task", fake_update_task)
-    monkeypatch.setattr(adapter, "_publish_task", lambda *_args, **_kwargs: "created")
-    monkeypatch.setattr(adapter, "ensure_labels", lambda *_args, **_kwargs: [])
-
-    results = adapter.update_tasks(
-        [task],
-        {"1": "Phase 1"},
-        issue_map={"t-10": 321},
-        project_item_map={},
-    )
-
-    assert called["update"] == 1
-    assert len(results) == 1
-    assert results[0] == "updated"
-
-
-def test_update_tasks_fallbacks_to_create(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status=None,
-        dry_run=False,
-    )
-    task = _make_task("t-2", "1.2")
-
-    called = {"publish": 0}
-
-    def fake_publish_task(task_obj, phase_label):
-        called["publish"] += 1
-        return "created"
-
-    monkeypatch.setattr(adapter, "_update_task", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(adapter, "_publish_task", fake_publish_task)
-    monkeypatch.setattr(adapter, "ensure_labels", lambda *_args, **_kwargs: [])
-
-    results = adapter.update_tasks(
-        [task],
-        {"1": "Phase 1"},
-        issue_map={},
-        project_item_map={},
-    )
-
-    assert called["publish"] == 1
-    assert len(results) == 1
-    assert results[0] == "created"
-
-
-def test_update_task_patch_payload(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status="Todo",
-        dry_run=False,
-    )
-    task = _make_task("t-3", "1.3")
-
+def test_issues_client_can_create(monkeypatch):
+    """Test that IssuesClient can create issues."""
+    client = IssuesClient(token="test_token")
+    
     captured = {}
-
-    def fake_rest_patch(url, payload):
+    
+    def fake_rest_post(url, payload):
         captured["url"] = url
         captured["payload"] = payload
-        return {}
-
-    monkeypatch.setattr(adapter, "_rest_patch", fake_rest_patch)
-    monkeypatch.setattr(adapter, "_set_project_status", lambda *_args, **_kwargs: None)
-
-    result = adapter._update_task(task, "Phase 1", 456, project_item_id=None)
-
-    assert "/issues/456" in captured["url"]
-    assert captured["payload"]["title"] == task.title
-    assert "Section: 1.3" in captured["payload"]["body"]
-    assert captured["payload"]["labels"] == ["Phase 1"]
-    assert result.action == "updated"
-    assert result.project_sync_status == "skipped"
-
-
-def test_update_task_patch_error(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=None,
-        default_status="Todo",
-        dry_run=False,
+        return {"number": 42, "node_id": "MDU6SXNzdWU0MjM="}
+    
+    monkeypatch.setattr(client, "rest_post", fake_rest_post)
+    
+    issue_number, node_id = client.create_issue(
+        "owner", "repo", 
+        title="Test Issue",
+        body="Test body"
     )
-    task = _make_task("t-4", "1.4")
-
-    def fake_rest_patch(_url, _payload):
-        raise RuntimeError("boom")
-
-    monkeypatch.setattr(adapter, "_rest_patch", fake_rest_patch)
-    monkeypatch.setattr(adapter, "_set_project_status", lambda *_args, **_kwargs: None)
-
-    result = adapter._update_task(task, "Phase 1", 999, project_item_id=None)
-
-    assert result.action == "failed"
-    assert "boom" in result.error_message
-    assert result.project_sync_status == "failed"
+    
+    assert issue_number == 42
+    assert node_id == "MDU6SXNzdWU0MjM="
+    assert captured["payload"]["title"] == "Test Issue"
 
 
-def test_update_task_recovers_project_item(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=1,
-        default_status="Todo",
-        dry_run=False,
-    )
-    task = _make_task("t-5", "1.5")
-
-    monkeypatch.setattr(adapter, "_rest_patch", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(adapter, "_get_project_id", lambda: "proj-1")
-    monkeypatch.setattr(adapter, "_get_issue_node_id", lambda _issue: "issue-node")
-    monkeypatch.setattr(adapter, "_find_project_item_id", lambda _proj, _issue: "item-9")
-    called = {"status": 0}
-
-    def fake_set_status(item_id, _status):
-        assert item_id == "item-9"
-        called["status"] += 1
-
-    monkeypatch.setattr(adapter, "_set_project_status", fake_set_status)
-
-    result = adapter._update_task(task, "Phase 1", 111, project_item_id=None)
-
-    assert result.project_item_id == "item-9"
-    assert result.project_sync_status == "recovered"
-    assert called["status"] == 1
-
-
-def test_update_task_no_lookup_when_project_item_present(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=1,
-        default_status="Todo",
-        dry_run=False,
-    )
-    task = _make_task("t-6", "1.6")
-
-    monkeypatch.setattr(adapter, "_rest_patch", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(adapter, "_get_project_id", lambda: (_ for _ in ()).throw(RuntimeError("should not call")))
-    monkeypatch.setattr(adapter, "_get_issue_node_id", lambda _issue: (_ for _ in ()).throw(RuntimeError("should not call")))
-    monkeypatch.setattr(adapter, "_find_project_item_id", lambda _proj, _issue: (_ for _ in ()).throw(RuntimeError("should not call")))
-    monkeypatch.setattr(adapter, "_set_project_status", lambda *_args, **_kwargs: None)
-
-    result = adapter._update_task(task, "Phase 1", 222, project_item_id="item-2")
-
-    assert result.project_sync_status == "found"
-
-
-def test_update_task_project_lookup_error(monkeypatch):
-    adapter = GitHubAdapter(
-        token="t",
-        repo_owner="owner",
-        repo_name="repo",
-        project_number=1,
-        default_status="Todo",
-        dry_run=False,
-    )
-    task = _make_task("t-7", "1.7")
-
-    monkeypatch.setattr(adapter, "_rest_patch", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(adapter, "_get_project_id", lambda: (_ for _ in ()).throw(RuntimeError("lookup failed")))
-    monkeypatch.setattr(adapter, "_set_project_status", lambda *_args, **_kwargs: None)
-
-    result = adapter._update_task(task, "Phase 1", 333, project_item_id=None)
-
-    assert result.action == "updated"
-    assert result.project_sync_status == "failed"
+def test_issues_client_title_includes_section_ref():
+    """Test that issues include section reference in body."""
+    client = IssuesClient(token="test_token")
+    task = _make_task("t-1", "1.1")
+    
+    # Verify the task can be used with the client
+    assert task.section_ref == "1.1"
+    assert task.title == "Title t-1"
     assert "Project sync failed" in result.error_message

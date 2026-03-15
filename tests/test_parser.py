@@ -1,4 +1,5 @@
-from taskboard_importer.parser_markdown import parse_markdown
+"""Tests for Markdown parsing using new parsing module."""
+from taskboard_importer.parsing import parse_markdown
 
 
 def test_parse_markdown_basic():

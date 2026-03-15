@@ -1,9 +1,9 @@
 import json
 import tempfile
 
-from taskboard_importer.dedupe import load_manifest_details, plan_dedupe
-from taskboard_importer.normalizer import normalize_project
-from taskboard_importer.parser_markdown import parse_markdown
+from taskboard_importer.sync import load_manifest_details, plan_dedupe
+from taskboard_importer.policies import normalize_project
+from taskboard_importer.parsing import parse_markdown
 
 
 def test_dedupe_skip():

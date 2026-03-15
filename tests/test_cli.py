@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-from taskboard_importer import cli
+import taskboard_importer.presentation.cli as cli
 from taskboard_importer.infrastructure.workspace import scaffold_project, load_project_config
 
 

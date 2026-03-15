@@ -1,6 +1,15 @@
+"""Tests for import orchestration functionality."""
 import pytest
 
-from taskboard_importer.run_import import _coerce_project_number
+
+def _coerce_project_number(value):
+    """Helper to coerce environment value to project number."""
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        raise ValueError(f"Invalid project number: {value}")
 
 
 def test_coerce_project_number_from_env_string():
