@@ -1,93 +1,354 @@
 # Taskboard Importer
 
-Sistema deterministico per trasformare roadmap Markdown strutturate in task normalizzati e pubblicarli su GitHub Issues + Projects, con classificazione e pubblicazione selettiva.
+Sistema deterministico per trasformare roadmap Markdown strutturate in task normalizzati e pubblicarli su GitHub Issues + Projects, con **architettura modulare** ben definita e separazione delle responsabilità.
 
-## Funzionalita
-- Parsing robusto di file Markdown strutturati
-- Normalizzazione in JSON con schema stabile
-- Project summary e phase summary
-- Classificazione deterministica dei task
-- Dedupe `skip/create/update`
-- Preview CLI con tipo e policy
-- Dry-run con output JSON e manifest
-- Publish selettivo (lane issue operativa)
-- Inizializzazione workspace di progetto (project initializer)
+## ✨ Caratteristiche
 
-## Comandi principali (initializer)
+- ✅ **Parsing robusto** di file Markdown strutturati (H1 titolo, H2 task)
+- ✅ **Normalizzazione** in JSON con schema stabile
+- ✅ **Classificazione deterministica** dei task (operational, checklist, documentation, status_register)
+- ✅ **Deduplicazione** intelligente con politiche skip/create/update
+- ✅ **Pubblicazione selettiva** su GitHub (4 livelli di policy)
+- ✅ **Architettura modulare** - ogni modulo riusabile in pipeline diverse
+- ✅ **Test coverage** completo
+- ✅ **Preview CLI** con tipo e policy
+- ✅ **Dry-run** preview-only mode
+
+## 🚀 Quick Start
+
+### Installazione
+
+```bash
+# Clone repository
+git clone <repo> && cd TaskBoard_Importer
+
+# Setup virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# or
+.venv\Scripts\activate      # Windows
+
+# Install
+pip install -e .
+```
+
+### Inizializzare progetto
+
 ```bash
 taskboard init-project \
-  --slug databricks-setup \
-  --title "Setup Environment Databricks" \
-  --path ./projects/databricks-setup \
-  --template standard
+  --path ./projects/my-roadmap \
+  --title "My Roadmap" \
+  --repo-owner kirey \
+  --repo-name my-repo
+```
 
+### Importare roadmap
+
+```bash
 taskboard import-roadmap \
-  --project ./projects/databricks-setup \
+  --project ./projects/my-roadmap \
   --dry-run
+```
 
+### Pubblicare su GitHub
+
+```bash
+taskboard import-roadmap \
+  --project ./projects/my-roadmap
+```
+
+## 🏗️ Architettura Modulare
+
+TaskBoard Importer è organizzato in **7 moduli con responsabilità chiare**:
+
+```
+domain/        → Entità, business logic, validazione
+parsing/       → Markdown → Dominio
+policies/      → Classificazione task e publish rules
+sync/          → Deduplicazione, fingerprints, manifest
+infrastructure → GitHub API integration, workspace management
+application/   → Orchestratori pipeline
+presentation/  → CLI, user interfaces
+```
+
+Vedi [docs/architecture.md](docs/architecture.md) per dettagli completi.
+
+## 📋 Comandi CLI
+
+### Init Project
+```bash
+taskboard init-project \
+  --path ./projects/my-project \
+  --title "Project Title" \
+  --template-path ./docs/templates/standard \
+  --repo-owner kirey \
+  --repo-name my-repo
+```
+
+### Import Roadmap
+```bash
+taskboard import-roadmap \
+  --project ./projects/my-project \
+  --dry-run                              # Preview solo, nessun publish
+  --dedupe-policy update                 # skip, create, o update
+  --previous-manifest outputs/manifest.json
+```
+
+### Bootstrap GitHub
+```bash
 taskboard bootstrap-github \
-  --project ./projects/databricks-setup \
-  --repo-owner <owner> --repo-name <repo>
+  --project ./projects/my-project \
+  --labels "Phase 1" "Phase 2" "Documentation"
 ```
 
-## Modello dati (sintesi)
-- `ProjectImport.summary`: contesto globale del documento
-- `Phase.summary`: contesto locale di fase
-- `Task.task_type`: `operational_task`, `checklist`, `documentation`, `status_register`
-- `Task.publish_policy`: `publish_as_issue`, `publish_as_doc_issue`, `publish_as_note`, `skip`
-- `Task.content_kind`: `list`, `table`, `mixed`
+## 📊 Modello Dati
 
-## Politiche di publish
-- `publish_as_issue` → pubblicato come issue standard
-- `publish_as_doc_issue` → tracciato ma **deferito** (lane documentale non ancora pubblicata)
-- `publish_as_note` / `skip` → non pubblicati, restano nel manifest
-
-## Dedupe policy
-- `skip`: salta task invariati rispetto al manifest precedente
-- `create`: crea sempre nuove issue
-- `update`: aggiorna issue esistenti se il contenuto e' cambiato
-
-Esempio con update:
-```bash
-python -m taskboard_importer.run_import \
-  --input docs/inputs/databricks_setup_environment_roadmap.md \
-  --previous-manifest outputs/sample_manifest.json \
-  --dedupe-policy update
+### Task
+```python
+Task(
+    task_id="1.1",
+    phase_id="1",
+    section_ref="1.1",
+    title="Implement feature",
+    activities=["Do X", "Do Y"],
+    verification=["Check A", "Check B"],
+    expected_output="Feature working",
+    done_when="Tests pass",
+    task_type="operational_task",           # auto-classified
+    publish_policy="publish_as_issue",      # auto-assigned
+    content_hash="abc123..."                # SHA256
+)
 ```
 
-## Telemetria manifest
-Il `result_summary` include:
-- conteggi per policy: `tasks_publishable_issue`, `tasks_doc_issue`, `tasks_note`, `tasks_policy_skip`
-- conteggi sync Project: `project_sync_found/recovered/missing/failed/skipped`
-- `summary_only_phases`
+### Politiche di Classificazione
 
-## Esecuzione rapida
+| Task Type | Detect | Policy | Output |
+|-----------|--------|--------|--------|
+| **operational_task** | verification/output/done_when | publish_as_issue | GitHub Issue |
+| **checklist** | [x] items o keyword "checklist" | publish_as_doc_issue | Deferred |
+| **documentation** | No verification + doc hints | publish_as_note | Manifest only |
+| **status_register** | Markdown tables | publish_as_note | Manifest only |
+
+### Dedupe Policies
+
+- **skip** (default): Salta task invariati, crea nuovi
+- **create**: Crea sempre nuove issue
+- **update**: Crea nuove, aggiorna cambiate, salta uguali
+
+## 📂 Struttura Progetto
+
+```
+projects/my-project/
+├── project.yaml              # Configurazione
+├── roadmap/
+│   └── roadmap.md           # Input Markdown
+├── outputs/
+│   ├── import.json          # Task normalizzati
+│   └── manifest.json        # Fingerprints + publish results
+├── rules/
+│   └── publish_rules.yml    # (opzionale) Custom policy
+├── docs/
+│   ├── architecture.md
+│   ├── decisions.md
+│   └── glossary.md
+└── state/
+    ├── backlog_notes.md
+    ├── current_status.md
+    └── risks.md
+```
+
+## 🔧 Usare Moduli Indipendentemente
+
+### Parsing only
+```python
+from taskboard_importer import parse_markdown
+
+project = parse_markdown("roadmap.md")
+# ProjectImport with phases and tasks
+```
+
+### Parsing + Classification
+```python
+from taskboard_importer import parse_markdown, normalize_project
+
+project = parse_markdown("roadmap.md")
+project = normalize_project(project)
+# Task sono classificati e hanno publish_policy
+```
+
+### Deduplicazione custom
+```python
+from taskboard_importer import (
+    parse_markdown,
+    normalize_project,
+    plan_dedupe,
+    compute_task_hash,
+    load_manifest
+)
+
+project = parse_markdown("roadmap.md")
+project = normalize_project(project)
+
+tasks = [t for p in project.phases for t in p.tasks]
+for task in tasks:
+    task.content_hash = compute_task_hash(task)
+
+previous = load_manifest("outputs/manifest.json")
+decisions = plan_dedupe(tasks, previous, policy="update")
+
+for decision in decisions:
+    if decision.action == "create":
+        print(f"New: {decision.task.title}")
+    elif decision.action == "update":
+        print(f"Changed: {decision.task.title}")
+    else:
+        print(f"Skip: {decision.task.title}")
+```
+
+### GitHub API directly
+```python
+from taskboard_importer.infrastructure.github import IssuesClient, LabelsClient
+
+# Create issues
+issues_client = IssuesClient(token="ghp_xxx")
+issue_num, node_id = issues_client.create_issue(
+    "owner", "repo", 
+    title="Feature X",
+    body="Description"
+)
+
+# Manage labels
+labels_client = LabelsClient(token="ghp_xxx")
+labels_client.ensure_labels("owner", "repo", ["Phase 1", "Phase 2"])
+```
+
+## 🧪 Test
+
 ```bash
-python -m taskboard_importer.run_import \
-  --input docs/inputs/databricks_setup_environment_roadmap.md \
+# Run all tests
+pytest tests/ -v
+
+# Run specific test module
+pytest tests/test_domain.py -v
+pytest tests/test_parsing.py -v
+pytest tests/test_policies.py -v
+pytest tests/test_sync.py -v
+
+# With coverage
+pytest tests/ --cov=taskboard_importer
+```
+
+## 📖 Documentazione
+
+- [Architecture](docs/architecture.md) - Dettagli architettura modulare
+- [Decisions](docs/decisions.md) - Technology decisions
+- Test fixtures: [tests/fixtures/](tests/fixtures/)
+
+## 🔐 Variabili Ambiente
+
+```bash
+GITHUB_TOKEN              # Personal access token
+REPO_OWNER                # GitHub repo owner
+REPO_NAME                 # GitHub repo name
+PROJECT_NUMBER            # GitHub project number (opzionale)
+DEFAULT_STATUS            # Default task status (default: Backlog)
+```
+
+O passare via CLI:
+```bash
+taskboard import-roadmap \
+  --project ./my-project \
+  --repo-owner kirey \
+  --repo-name task-tracker \
+  --token ghp_xxx
+```
+
+## 📝 Esempio Completo
+
+### 1. Create Markdown Roadmap
+```markdown
+# Q1 2024 Roadmap
+
+## 1. Setup Environment
+### 1.1 Create Workspace
+**Attività**: Create AWS workspace
+**Verifica**: Workspace is accessible
+**Output atteso**: Workspace ID in system
+
+## 2. Core Features
+### 2.1 Implement API
+**Attività**:
+- Setup routing
+- Add authentication
+**Verifica**:
+- Tests pass
+- Coverage > 80%
+```
+
+### 2. Initialize Project
+```bash
+taskboard init-project \
+  --path ./projects/q1-roadmap \
+  --title "Q1 2024 Roadmap"
+```
+
+### 3. Preview
+```bash
+taskboard import-roadmap \
+  --project ./projects/q1-roadmap \
   --dry-run
 ```
 
-## Pubblicazione su GitHub
-Imposta le variabili ambiente o passa i parametri CLI:
-- `GITHUB_TOKEN`
-- `REPO_OWNER`
-- `REPO_NAME`
-- `PROJECT_NUMBER` (opzionale)
-- `DEFAULT_STATUS` (opzionale)
-
-Esempio:
+### 4. Publish to GitHub
 ```bash
-python -m taskboard_importer.run_import \
-  --input docs/inputs/databricks_setup_environment_roadmap.md \
-  --repo-owner <owner> --repo-name <repo> --project-number 1 \
-  --default-status "Todo" --yes
+taskboard import-roadmap \
+  --project ./projects/q1-roadmap \
+  --repo-owner myorg \
+  --repo-name product-roadmap
 ```
 
-## Struttura repository
-- `src/taskboard_importer/`: core del sistema
-- `tests/`: test e fixture
-- `outputs/`: esempi di output
-- `docs/`: documentazione
-- `docs/inputs/`: input reali e analisi
-- `docs/templates/`: template per initializer
+## 🛠️ Development
+
+### Add New Policy
+```python
+# policies/custom_rules.py
+from taskboard_importer.domain import Task
+
+def my_custom_classify(task: Task, phase_title: str):
+    if task.title.startswith("URGENT"):
+        task.publish_policy = "publish_as_issue"
+        return
+    # ... more logic
+```
+
+### Extend GitHub Integration
+```python
+# infrastructure/github/custom_client.py
+from taskboard_importer.infrastructure.github import GitHubClient
+
+class CustomClient(GitHubClient):
+    def my_custom_api_call(self):
+        return self.graphql("""
+            query { ... }
+        """)
+```
+
+## 🤝 Contributing
+
+Pull requests welcome! Please:
+1. Write tests for new features
+2. Update documentation
+3. Follow existing code style
+
+## 📄 License
+
+MIT - See LICENSE file
+
+## 🎯 Roadmap
+
+- [ ] Async GitHub API (aiohttp)
+- [ ] Jira integration backend
+- [ ] Custom policy plugins
+- [ ] Performance caching layer
+- [ ] Web UI for preview/publish
+
