@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The TaskBoard Importer project has been successfully consolidated to a **single, unified modular architecture**. All legacy duplicate modules have been removed from the root package, the test suite has been migrated to use only new package structure, and comprehensive end-to-end validation has been performed.
+The TaskBoard Importer project has been successfully consolidated to a **single, unified modular architecture**. All legacy duplicate modules have been removed from the root package, the test suite naming has been aligned to the modular package structure, and comprehensive local validation has been performed.
 
 **Result: READY FOR QA TEST PHASE** ✅
 
@@ -58,17 +58,18 @@ Tests have been realigned to new architecture:
 
 | Test File | Status | Details |
 |-----------|--------|---------|
-| test_dedupe.py | ✅ Updated | Uses `sync/`, `policies/`, `parsing/` |
+| test_application_import_roadmap.py | ✅ Added | Covers import pipeline and update flow |
+| test_application_init_workspace.py | ✅ Added | Covers application workspace initialization |
+| test_bootstrap_github.py | ✅ Added | Covers bootstrap orchestration |
+| test_cli.py | ✅ Added | Covers canonical CLI entrypoints |
 | test_domain.py | ✅ Original | Tests new `domain/` package |
-| test_mapping.py | ✅ Updated | Uses `policies/`, `parsing/`, `domain/` |
-| test_parser.py | ✅ Updated | Uses `parsing/` |
+| test_infrastructure_workspace.py | ✅ Added | Covers workspace config loading |
 | test_parsing.py | ✅ Original | Tests new `parsing/` package |
+| test_parsing_markdown.py | ✅ Added | Covers Markdown parsing behaviors |
 | test_policies.py | ✅ Original | Tests new `policies/` package |
-| test_run_import.py | ✅ Updated | Utilities only, no legacy dependency |
+| test_policies_normalization.py | ✅ Added | Covers normalization and validation rules |
 | test_sync.py | ✅ Original | Tests new `sync/` package |
-| test_github_adapter.py | ❌ Removed | Legacy adapter tests, no longer relevant |
-| test_workspace.py | ❌ Removed | Legacy workspace tests, replaced by infrastructure/ tests |
-| test_cli.py | ❌ Removed | Legacy CLI harness, new CLI in presentation/ |
+| test_sync_manifest.py | ✅ Added | Covers manifest loading and sync planning |
 
 **Test Suite Result:**
 ```
@@ -76,7 +77,7 @@ Tests have been realigned to new architecture:
 46 tests PASSED
 0 tests FAILED
 Execution time: ~1.4s
-Regression coverage: Core workflow + CLI/application critical paths
+Regression coverage: Core workflow plus CLI, application and workspace critical paths
 ```
 
 ---
@@ -154,8 +155,8 @@ Regression coverage: Core workflow + CLI/application critical paths
 | **parsing** | parse_markdown(), read_markdown_file() | ✅ Active | 6 tests |
 | **policies** | classify_task(), normalize_project() | ✅ Active | 6 tests |
 | **sync** | compute_task_hash(), plan_dedupe(), load_manifest() | ✅ Active | 9 tests |
-| **infrastructure** | GitHub clients, workspace scaffold/config, templates | ✅ Active | Tested via E2E |
-| **application** | import_roadmap(), init_workspace(), bootstrap_github() | ✅ Active | Tested via E2E |
+| **infrastructure** | GitHub clients, workspace scaffold/config, templates | ✅ Active | Tested via dedicated tests |
+| **application** | import_roadmap(), init_workspace(), bootstrap_github() | ✅ Active | Tested via dedicated tests |
 | **presentation** | cli main(), render_preview() | ✅ Active | Default CLI ready |
 
 ### Reverse-Dependency Check
@@ -174,7 +175,7 @@ Regression coverage: Core workflow + CLI/application critical paths
 - ✅ Clean separation of layers
 
 ### Testing
-- ✅ 41 tests passing
+- ✅ 46 tests passing
 - ✅ All new-module tests passing
 - ✅ End-to-end smoke test passing
 - ✅ Comprehensive coverage of:
@@ -217,9 +218,11 @@ Regression coverage: Core workflow + CLI/application critical paths
 
 1. **GitHub API Integration:** Publish flow is implemented and unit-tested through fakes/stubs, but not yet validated against a real GitHub repository and Project V2 in this smoke test.
 
-2. **Template System:** Template loader exists but not exercised in smoke test. Should be validated with real projects.
+2. **`publish_as_doc_issue`:** Currently tracked as deferred in the manifest and not published as an active GitHub issue.
 
-3. **Advanced Features:** Some edge cases in complex Markdown structures may exist but are covered by unit tests.
+3. **Template System:** Template loader exists but not exercised in smoke test. Should be validated with real projects.
+
+4. **Advanced Features:** Some edge cases in complex Markdown structures may exist but are covered by unit tests.
 
 ---
 
@@ -228,16 +231,16 @@ Regression coverage: Core workflow + CLI/application critical paths
 **The TaskBoard Importer is architecturally consolidated and ready for the next QA test phase.**
 
 ### Next Steps
-1. **Pilot Users:** Can now use the consolidated system for real roadmap imports
-2. **GitHub Integration:** Can be tested when pilot users have real GitHub projects
-3. **Performance Testing:** Can evaluate with larger roadmaps
-4. **Edge Case Discovery:** Pilot users may uncover edge cases in Markdown parsing
+1. **Integration Validation:** Execute controlled GitHub integration test on real repository
+2. **QA/UAT:** Promote the validated build using the handoff checklist
+3. **Performance Testing:** Evaluate with larger roadmaps
+4. **Edge Case Discovery:** Expand parsing coverage with pilot scenarios
 
 ---
 
 ## Artifact Locations
 
-- **Test Results:** `tests/` (41 tests passing)
+- **Test Results:** `tests/` (46 tests passing)
 - **Smoke Test Output:** 
   - `outputs/smoke_import.json` (2,217 bytes)
   - `outputs/smoke_manifest.json` (1,922 bytes)
@@ -248,4 +251,4 @@ Regression coverage: Core workflow + CLI/application critical paths
 
 **Report Generated:** 2026-03-15  
 **Tester:** Automated Smoke Test  
-**Status:** ✅ PASSED - READY FOR PILOT USERS
+**Status:** ✅ PASSED - READY FOR QA TEST PHASE

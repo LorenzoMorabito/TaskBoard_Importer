@@ -1,10 +1,11 @@
-"""Tests for mapping, normalization and validation using new modules."""
-from taskboard_importer.policies import normalize_project
-from taskboard_importer.parsing import parse_markdown
+"""Tests for normalization and validation policies."""
+
 from taskboard_importer.domain import validate_project
+from taskboard_importer.parsing import parse_markdown
+from taskboard_importer.policies import normalize_project
 
 
-def test_normalize_defaults():
+def test_normalize_project_fills_defaults():
     project = parse_markdown("tests/fixtures/databricks_setup_environment_roadmap.md")
     project = normalize_project(project, default_status="Backlog")
     task = project.phases[0].tasks[1]
@@ -14,7 +15,7 @@ def test_normalize_defaults():
     assert task.content_hash
 
 
-def test_phase_without_tasks_allowed_when_summary_present(tmp_path):
+def test_validate_project_allows_summary_only_phase(tmp_path):
     content = """# Title
 # 1. Phase
 This is a descriptive phase without tasks.
@@ -31,7 +32,7 @@ Attività
     assert errors == []
 
 
-def test_task_classification_rules(tmp_path):
+def test_normalize_project_applies_classification_rules(tmp_path):
     content = """# Title
 # 1. Phase
 ## 1.1 Registro

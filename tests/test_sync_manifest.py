@@ -1,12 +1,13 @@
+"""Tests for manifest loading and sync planning."""
+
 import json
-import tempfile
 
-from taskboard_importer.sync import load_manifest_details, plan_dedupe
-from taskboard_importer.policies import normalize_project
 from taskboard_importer.parsing import parse_markdown
+from taskboard_importer.policies import normalize_project
+from taskboard_importer.sync import load_manifest_details, plan_dedupe
 
 
-def test_dedupe_skip():
+def test_plan_dedupe_skip_for_unchanged_task():
     project = parse_markdown("tests/fixtures/databricks_setup_environment_roadmap.md")
     project = normalize_project(project)
     task = project.phases[0].tasks[0]
@@ -16,7 +17,7 @@ def test_dedupe_skip():
     assert decisions[0].action == "skip"
 
 
-def test_load_manifest_details_maps_section_ref(tmp_path):
+def test_load_manifest_details_maps_task_and_section_keys(tmp_path):
     manifest = {
         "task_fingerprints": {"1.1": "hash"},
         "publish_results": [

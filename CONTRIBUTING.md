@@ -81,8 +81,8 @@ def import_roadmap(...):
 ```
 
 **Step 4: Add Tests**
-- Unit tests: `tests/test_<module>.py`
-- Integration: `tests/test_<concern>.py`
+- Unit tests: `tests/test_<layer>_<concern>.py`
+- Integration: `tests/test_<layer>_<workflow>.py`
 
 **Step 5: Update __init__.py if Public**
 ```python
@@ -105,7 +105,7 @@ __all__ = [..., "my_new_feature"]
 ### 3. Adding Tests
 
 New tests should:
-- Be placed in `tests/test_<module>.py`
+- Be placed in `tests/test_<layer>_<concern>.py`
 - Follow the existing pattern (class-based grouping)
 - Test one concern per test
 - Use fixtures from `conftest.py`
@@ -143,7 +143,7 @@ pytest tests/ -v
 
 #### Run specific test module
 ```bash
-pytest tests/test_parsing.py -v
+pytest tests/test_application_import_roadmap.py -v
 ```
 
 #### Run with coverage
@@ -169,7 +169,7 @@ print(f'Processed {sum(len(p.tasks) for p in project.phases)} tasks')
 ### 6. Before Submitting a PR
 
 1. ✅ Run `pytest tests/ -v` - all tests pass
-2. ✅ No imports from legacy modules (cli, schema, dedupe, etc.)
+2. ✅ No imports from legacy modules or legacy entrypoints
 3. ✅ Docstrings updated
 4. ✅ `__init__.py` exports updated (if public)
 5. ✅ No circular dependencies
@@ -224,9 +224,20 @@ When proposing architectural changes:
 
 ---
 
+## Test Naming
+
+The test suite mirrors the modular architecture:
+- `test_application_*` for orchestrators
+- `test_domain.py` for domain entities and validation
+- `test_parsing*` for Markdown parsing concerns
+- `test_policies*` for classification and normalization
+- `test_sync*` for manifest, drift and planning concerns
+- `test_infrastructure_*` for adapters and config loading
+- `test_cli.py` for presentation entrypoints
+
 ## Questions?
 
 - Check existing code in the module for patterns
 - Look at existing tests for examples
-- Review `docs/MIGRATION.md` for legacy→modern mappings
+- Review `docs/MIGRATION.md` for historical legacy→modern mappings
 - Check `docs/architecture.md` for detailed module descriptions

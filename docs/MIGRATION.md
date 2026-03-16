@@ -1,5 +1,10 @@
 # Guida Migrazione: Da Monolita a Architettura Modulare
 
+> Documento storico di migrazione.
+> I riferimenti a moduli o entrypoint legacy presenti in questo file servono
+> esclusivamente a mappare il vecchio assetto al nuovo e non devono essere
+> usati come istruzioni operative correnti.
+
 Questo documento spiega come il codice legacy è stato trasformato nella nuova architettura modulare, permettendoti di:
 1. Capire dove trovare il tuo codice
 2. Adattare custom logic al nuovo modulo

@@ -1,4 +1,4 @@
-"""Tests for import roadmap orchestration."""
+"""Tests for the application import pipeline."""
 
 import json
 

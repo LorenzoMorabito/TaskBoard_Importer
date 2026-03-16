@@ -1,8 +1,9 @@
-"""Tests for Markdown parsing using new parsing module."""
+"""Tests for Markdown parsing behavior."""
+
 from taskboard_importer.parsing import parse_markdown
 
 
-def test_parse_markdown_basic():
+def test_parse_markdown_basic_structure():
     project = parse_markdown("tests/fixtures/databricks_setup_environment_roadmap.md")
     assert project.title == "Databricks Setup Environment Roadmap"
     assert len(project.phases) == 2
@@ -14,7 +15,7 @@ def test_parse_markdown_basic():
     assert first_task.expected_output.startswith("Workspace")
 
 
-def test_parse_bold_labels_and_inline_values(tmp_path):
+def test_parse_markdown_supports_bold_inline_labels(tmp_path):
     content = """# Title
 # 1. Phase
 ## 1.1 Task
@@ -40,7 +41,7 @@ def test_parse_bold_labels_and_inline_values(tmp_path):
     assert task.initial_status == "TODO"
 
 
-def test_preamble_before_first_phase_attaches_to_summary(tmp_path):
+def test_parse_markdown_attaches_preamble_to_project_summary(tmp_path):
     content = """# Doc Title
 ## Scopo del documento
 ## Come usare questa roadmap

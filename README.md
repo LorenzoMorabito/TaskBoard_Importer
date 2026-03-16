@@ -95,6 +95,15 @@ Vedi [docs/architecture.md](docs/architecture.md) per dettagli completi.
 
 ## 📋 Comandi CLI
 
+L'interfaccia operativa canonica del progetto e' la CLI `taskboard`.
+Per sviluppo locale e troubleshooting e' supportato anche:
+
+```bash
+python -m taskboard_importer.presentation.cli --help
+```
+
+Non sono supportati entrypoint legacy esterni al package modulare.
+
 ### Init Project
 ```bash
 taskboard init-project \
@@ -254,7 +263,7 @@ pytest tests/ -v
 # Run specific test module
 pytest tests/test_domain.py -v
 pytest tests/test_parsing.py -v
-pytest tests/test_policies.py -v
+pytest tests/test_application_import_roadmap.py -v
 pytest tests/test_sync.py -v
 
 # With coverage
@@ -265,6 +274,8 @@ pytest tests/ --cov=taskboard_importer
 
 - [Architecture](docs/architecture.md) - Dettagli architettura modulare
 - [Decisions](docs/decisions.md) - Technology decisions
+- [QA/UAT Handoff](docs/QA_UAT_HANDOFF.md) - Gate, evidenze e limitazioni residue
+- [Integration Report Template](docs/INTEGRATION_TEST_REPORT_TEMPLATE.md) - Report per publish GitHub reale
 - Test fixtures: [tests/fixtures/](tests/fixtures/)
 
 ## 🔐 Variabili Ambiente
@@ -364,6 +375,11 @@ Pull requests welcome! Please:
 1. Write tests for new features
 2. Update documentation
 3. Follow existing code style
+
+## ⚠️ Limitazioni Note
+
+- `publish_as_doc_issue` e' attualmente gestito come deferred nel manifest e non come publish GitHub attivo.
+- Il flusso di publish GitHub e' coperto da test automatici locali; la validazione end-to-end contro repository GitHub e Project V2 reali va eseguita come integration test controllato.
 
 ## 📄 License
 
