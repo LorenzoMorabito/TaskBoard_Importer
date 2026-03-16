@@ -45,7 +45,7 @@ supporto dopo il superamento del gate finale di integrazione.
 ## Limitazioni Note / Follow-up
 
 - `publish_as_doc_issue` e' deferred nel manifest, non viene pubblicato come issue attiva
-- bug residuo Windows Unicode/emoji tracciato in `docs/KNOWN_ISSUES.md`
+- bug residuo Windows Unicode/emoji tracciato in `docs/KNOWN_ISSUES.md` e nell'issue repo `#1`
 
 ## Regola Operativa Post-Gate
 

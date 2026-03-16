@@ -10,6 +10,7 @@ superamento del gate finale di integrazione.
 - Area: `presentation/cli.py`
 - Detected during: integration gate `qa-ready-001`
 - Evidence: `outputs/qa-ready-001-session/INTEGRATION_TEST_REPORT.md`
+- Tracking issue: `#1` (`BUG-001: CLI Unicode output can fail on Windows non-UTF-8 shells`)
 
 ### Description
 
