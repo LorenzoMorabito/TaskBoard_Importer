@@ -275,6 +275,7 @@ pytest tests/ --cov=taskboard_importer
 - [Architecture](docs/architecture.md) - Dettagli architettura modulare
 - [Decisions](docs/decisions.md) - Technology decisions
 - [QA/UAT Handoff](docs/QA_UAT_HANDOFF.md) - Gate, evidenze e limitazioni residue
+- [Known Issues](docs/KNOWN_ISSUES.md) - Bug tracciati e follow-up non bloccanti
 - [Integration Report Template](docs/INTEGRATION_TEST_REPORT_TEMPLATE.md) - Report per publish GitHub reale
 - Test fixtures: [tests/fixtures/](tests/fixtures/)
 
@@ -379,7 +380,8 @@ Pull requests welcome! Please:
 ## ⚠️ Limitazioni Note
 
 - `publish_as_doc_issue` e' attualmente gestito come deferred nel manifest e non come publish GitHub attivo.
-- Il flusso di publish GitHub e' coperto da test automatici locali; la validazione end-to-end contro repository GitHub e Project V2 reali va eseguita come integration test controllato.
+- Il gate di integrazione GitHub reale e' stato validato sulla baseline `qa-ready-001`; gli artefatti sono disponibili in `outputs/qa-ready-001-session/`.
+- Su shell Windows non UTF-8 la CLI puo' richiedere `PYTHONIOENCODING=utf-8` a causa dell'output con emoji.
 
 ## 📄 License
 
