@@ -1,0 +1,9 @@
+github:
+  repo_name: TaskBoard_Importer_Sandbox
+  repo_owner: LorenzoMorabito
+paths:
+  docs: docs
+  outputs: outputs
+  roadmap: roadmap/roadmap.md
+  rules: rules
+title: QA Ready Session
